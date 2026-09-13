@@ -1,71 +1,62 @@
 <Window x:Class="CodexPetLimitRings.Windows.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Codex 포션 HUD 설정" Width="520" Height="690" MinWidth="480" MinHeight="560"
-        Background="#FAFAFA" WindowStartupLocation="CenterScreen" Closing="Window_OnClosing">
+        Title="周额度 · 挂件设置" Width="520" Height="620" MinWidth="480" MinHeight="450"
+        FontFamily="Microsoft YaHei UI" Background="#FAFAFA" WindowStartupLocation="CenterScreen" Closing="Window_OnClosing">
   <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel Margin="22">
       <DockPanel Margin="0,0,0,18">
-        <Button DockPanel.Dock="Right" Content="기본값 복원" Click="ResetButton_OnClick" />
-        <StackPanel><TextBlock Text="🐱 Codex 포션 HUD" FontSize="21" FontWeight="Bold"/><TextBlock Text="변경 사항은 바로 적용돼요" Foreground="#71717A"/></StackPanel>
+        <Button DockPanel.Dock="Right" Content="恢复默认" Click="ResetButton_OnClick" />
+        <StackPanel><TextBlock Text="Codex 周额度" FontSize="21" FontWeight="Bold"/><TextBlock Text="修改后立即生效，自动保存" Foreground="#71717A"/></StackPanel>
       </DockPanel>
 
       <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
         <StackPanel>
-          <TextBlock Text="배치" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="실제 Codex 펫을 기준으로 위치를 맞춰요." Foreground="#71717A" Margin="0,2,0,12"/>
-          <TextBlock Text="펫 기준 정렬"/>
+          <TextBlock Text="自动更新" FontSize="15" FontWeight="SemiBold"/>
+          <DockPanel Margin="0,10,0,5"><TextBlock Text="读取额度的间隔"/><TextBlock x:Name="RefreshMinutesValue" HorizontalAlignment="Right" FontWeight="SemiBold"/></DockPanel>
+          <Slider x:Name="RefreshMinutes" Minimum="1" Maximum="60" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Control_OnChanged"/>
+          <TextBlock Text="1–60 分钟可调，默认 5 分钟。倒计时持续更新；点击「自动读取额度」可立即刷新。" Foreground="#71717A" TextWrapping="Wrap" Margin="0,8,0,0"/>
+          <CheckBox x:Name="ResetRadarEnabled" Content="监控 codex-reset.com 重置信号" Margin="0,12,0,5" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+          <CheckBox x:Name="ResetNotificationsEnabled" Content="新信号通过 Windows 通知提醒" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+          <TextBlock Text="沿用上方间隔；宠物隐藏时仍检查信号。首次连接只记录历史，同一事件不重复提醒。" Foreground="#71717A" TextWrapping="Wrap" Margin="0,7,0,0"/>
+        </StackPanel>
+      </Border>
+
+      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
+        <StackPanel>
+          <TextBlock Text="位置" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="状态条跟随 Codex 宠物，靠近屏幕边缘时自动换侧。" Foreground="#71717A" Margin="0,2,0,12"/>
+          <TextBlock Text="相对宠物的位置"/>
           <ComboBox x:Name="Alignment" Margin="0,5,0,12" SelectionChanged="Control_OnChanged">
-            <ComboBoxItem Tag="split" Content="양옆 자동"/>
-            <ComboBoxItem Tag="left" Content="펫 왼쪽"/>
-            <ComboBoxItem Tag="right" Content="펫 오른쪽"/>
-            <ComboBoxItem Tag="above" Content="펫 위쪽"/>
-            <ComboBoxItem Tag="below" Content="펫 아래쪽"/>
+
+            <ComboBoxItem Tag="left" Content="左侧"/>
+            <ComboBoxItem Tag="right" Content="右侧"/>
+            <ComboBoxItem Tag="above" Content="上方"/>
+            <ComboBoxItem Tag="below" Content="下方"/>
           </ComboBox>
-          <DockPanel><TextBlock Text="가로 위치"/><TextBlock x:Name="HorizontalOffsetValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel><TextBlock Text="水平偏移"/><TextBlock x:Name="HorizontalOffsetValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
           <Slider x:Name="HorizontalOffset" Minimum="-400" Maximum="400" TickFrequency="1" ValueChanged="Control_OnChanged"/>
-          <DockPanel Margin="0,10,0,0"><TextBlock Text="세로 위치"/><TextBlock x:Name="VerticalOffsetValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel Margin="0,10,0,0"><TextBlock Text="垂直偏移"/><TextBlock x:Name="VerticalOffsetValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
           <Slider x:Name="VerticalOffset" Minimum="-300" Maximum="300" TickFrequency="1" ValueChanged="Control_OnChanged"/>
           <UniformGrid Columns="5" Margin="0,12,0,0">
-            <Button Content="←" Tag="left" Click="NudgeButton_OnClick" Margin="2" ToolTip="왼쪽 5px"/>
-            <Button Content="↑" Tag="up" Click="NudgeButton_OnClick" Margin="2" ToolTip="위 5px"/>
-            <Button Content="중앙" Tag="center" Click="NudgeButton_OnClick" Margin="2"/>
-            <Button Content="↓" Tag="down" Click="NudgeButton_OnClick" Margin="2" ToolTip="아래 5px"/>
-            <Button Content="→" Tag="right" Click="NudgeButton_OnClick" Margin="2" ToolTip="오른쪽 5px"/>
+            <Button Content="←" Tag="left" Click="NudgeButton_OnClick" Margin="2" ToolTip="向左 5 像素"/>
+            <Button Content="↑" Tag="up" Click="NudgeButton_OnClick" Margin="2" ToolTip="向上 5 像素"/>
+            <Button Content="归位" Tag="center" Click="NudgeButton_OnClick" Margin="2"/>
+            <Button Content="↓" Tag="down" Click="NudgeButton_OnClick" Margin="2" ToolTip="向下 5 像素"/>
+            <Button Content="→" Tag="right" Click="NudgeButton_OnClick" Margin="2" ToolTip="向右 5 像素"/>
           </UniformGrid>
         </StackPanel>
       </Border>
 
       <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
         <StackPanel>
-          <TextBlock Text="크기와 간격" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="화면과 펫 크기에 맞춰 조절해요." Foreground="#71717A" Margin="0,2,0,12"/>
-          <DockPanel><TextBlock Text="전체 크기"/><TextBlock x:Name="ScaleValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
+          <TextBlock Text="大小与间距" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="默认 190 × 72，可继续缩放。" Foreground="#71717A" Margin="0,2,0,12"/>
+          <DockPanel><TextBlock Text="状态条大小"/><TextBlock x:Name="ScaleValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
           <Slider x:Name="Scale" Minimum="0.5" Maximum="1.8" TickFrequency="0.05" ValueChanged="Control_OnChanged"/>
-          <DockPanel Margin="0,10,0,0"><TextBlock Text="포션 간격"/><TextBlock x:Name="PotionGapValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel Margin="0,10,0,0"><TextBlock Text="与宠物的间距"/><TextBlock x:Name="PotionGapValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
           <Slider x:Name="PotionGap" Minimum="0" Maximum="160" TickFrequency="1" ValueChanged="Control_OnChanged"/>
         </StackPanel>
       </Border>
 
-      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
-        <StackPanel>
-          <TextBlock Text="잔여량 알림" FontSize="15" FontWeight="SemiBold"/>
-          <CheckBox x:Name="UsageAlerts" Content="포션 알림 사용" Margin="0,10,0,8" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
-          <WrapPanel>
-            <CheckBox x:Name="Alert20" Content="20%" Margin="0,0,18,0" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
-            <CheckBox x:Name="Alert10" Content="10%" Margin="0,0,18,0" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
-            <CheckBox x:Name="Alert5" Content="5%" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
-          </WrapPanel>
-          <CheckBox x:Name="NativeNotifications" Content="Windows 알림 배너 표시" Margin="0,10,0,0" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
-        </StackPanel>
-      </Border>
-
-      <Border Padding="16" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
-        <StackPanel>
-          <TextBlock Text="저장 공간" FontSize="15" FontWeight="SemiBold"/>
-          <CheckBox x:Name="AutoCleanup" Content="매일 앱 캐시 자동 정리" Margin="0,10,0,8" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
-          <TextBlock x:Name="CleanupStatus" Foreground="#71717A" FontSize="11"/>
-          <Button Content="캐시 지금 정리" Click="CleanupButton_OnClick" />
-        </StackPanel>
-      </Border>
     </StackPanel>
   </ScrollViewer>
 </Window>

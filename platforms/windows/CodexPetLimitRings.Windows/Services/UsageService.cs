@@ -72,55 +72,15 @@ public sealed class UsageService : IDisposable
                 : root;
         var primary = FindWindow(container, "primary", "primary_window");
         var secondary = FindWindow(container, "secondary", "secondary_window");
-        WindowValue? weekly = primary?.WindowSeconds >= TimeSpan.FromDays(1).TotalSeconds
-            ? primary
-            : secondary?.WindowSeconds >= TimeSpan.FromDays(1).TotalSeconds
-                ? secondary
-                : null;
-
-        if (root.TryGetProperty("additional_rate_limits", out var additional) &&
-            additional.ValueKind is JsonValueKind.Array)
-        {
-            foreach (var item in additional.EnumerateArray())
-            {
-                if (item.ValueKind is not JsonValueKind.Object) continue;
-                var extraContainer = item.TryGetProperty("rate_limit", out var extraRateLimit) &&
-                                     extraRateLimit.ValueKind is JsonValueKind.Object
-                    ? extraRateLimit
-                    : item.TryGetProperty("rateLimit", out var camelExtraRateLimit) &&
-                      camelExtraRateLimit.ValueKind is JsonValueKind.Object
-                        ? camelExtraRateLimit
-                        : default;
-                if (extraContainer.ValueKind is not JsonValueKind.Object) continue;
-
-                var extraPrimary = FindWindow(extraContainer, "primary", "primary_window");
-                if (extraPrimary?.Used is null ||
-                    extraPrimary.WindowSeconds is not { } extraSeconds ||
-                    extraSeconds >= TimeSpan.FromDays(1).TotalSeconds)
-                {
-                    continue;
-                }
-
-                var extraSecondary = FindWindow(extraContainer, "secondary", "secondary_window");
-                primary = extraPrimary;
-                secondary = weekly ?? extraSecondary;
-                break;
-            }
-        }
-        var primaryLooksWeekly = primary?.WindowSeconds >= TimeSpan.FromDays(1).TotalSeconds;
-        var secondaryLooksShort = secondary?.WindowSeconds < TimeSpan.FromDays(1).TotalSeconds;
-        if (primaryLooksWeekly && (secondary is null || secondaryLooksShort))
-        {
-            (primary, secondary) = (secondary, primary);
-        }
-        if (primary?.Used is null && secondary?.Used is null) return null;
-        return new UsageSnapshot(
-            primary?.Used,
-            secondary?.Used,
-            primary?.Reset,
-            secondary?.Reset,
-            "live",
-            DateTimeOffset.Now);
+        // Only the general account's explicit seven-day window belongs in this HUD.
+        // Never substitute Spark/model-specific quota, a short window, or a monthly limit.
+        var weekly = new[] { primary, secondary }.FirstOrDefault(window =>
+            window?.WindowSeconds is { } seconds && Math.Abs(seconds - 604800) < 1);
+        // Older responses omit duration on the documented-by-convention secondary slot.
+        weekly ??= secondary?.WindowSeconds is null ? secondary : null;
+        if (weekly?.Used is null) return null;
+        return new UsageSnapshot(null, weekly.Used, null, weekly.Reset,
+            "live", DateTimeOffset.Now, weekly.WindowSeconds);
     }
 
     private static WindowValue? FindWindow(JsonElement container, string preferred, string fallback)
@@ -141,7 +101,7 @@ public sealed class UsageService : IDisposable
         {
             used = 100 - remaining;
         }
-        if (used is { } usedValue && !double.IsFinite(usedValue)) used = null;
+        if (used is { } usedValue && (!double.IsFinite(usedValue) || usedValue < 0 || usedValue > 100)) used = null;
         var reset = ReadReset(value);
         double? windowSeconds = TryDouble(value, "limit_window_seconds")
             ?? TryDouble(value, "window_seconds")

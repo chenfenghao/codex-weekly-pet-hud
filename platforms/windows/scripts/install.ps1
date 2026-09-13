@@ -1,51 +1,28 @@
 param(
-    [ValidateSet("win-x64", "win-arm64")]
-    [string]$Runtime = $(if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "win-arm64" } else { "win-x64" })
+    [ValidateSet('win-x64','win-arm64')][string]$Runtime = 'win-x64',
+    [switch]$AutoStart
 )
-
-$ErrorActionPreference = "Stop"
-$WindowsRoot = Split-Path -Parent $PSScriptRoot
-$Project = Join-Path $WindowsRoot "CodexPetLimitRings.Windows\CodexPetLimitRings.Windows.csproj"
-$Artifact = Join-Path $WindowsRoot "artifacts\$Runtime"
-$InstallRoot = Join-Path $env:LOCALAPPDATA "Programs\CodexPetLimitRings"
-$Executable = Join-Path $InstallRoot "CodexPetLimitRings.exe"
-$RunKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-
-if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-    throw ".NET 8 SDK가 필요합니다. https://dotnet.microsoft.com/download/dotnet/8.0 에서 설치한 뒤 다시 실행하세요."
+$ErrorActionPreference = 'Stop'
+$windowsRoot = Split-Path -Parent $PSScriptRoot
+$project = Join-Path $windowsRoot 'CodexPetLimitRings.Windows/CodexPetLimitRings.Windows.csproj'
+$artifact = Join-Path $windowsRoot ('artifacts/install-' + [guid]::NewGuid().ToString('N'))
+$installRoot = Join-Path $env:LOCALAPPDATA 'Programs/CodexWeeklyPetHud'
+$executable = Join-Path $installRoot 'CodexWeeklyPetHud.exe'
+$runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { throw 'Install .NET 8 SDK before installing from source.' }
+dotnet publish $project -c Release -r $Runtime --self-contained true -p:PublishSingleFile=true -o $artifact
+if ($LASTEXITCODE -ne 0) { throw 'Windows publish failed.' }
+$running = @(Get-Process CodexWeeklyPetHud -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $executable })
+foreach ($process in $running) {
+    Stop-Process -Id $process.Id
+    if (-not $process.WaitForExit(10000)) { throw 'Close the running HUD and retry.' }
 }
-
-Remove-Item $Artifact -Recurse -Force -ErrorAction SilentlyContinue
-dotnet publish $Project -c Release -r $Runtime --self-contained true -p:PublishSingleFile=true -o $Artifact
-if ($LASTEXITCODE -ne 0) { throw "Windows publish failed." }
-
-$RunningProcesses = @(Get-Process CodexPetLimitRings -ErrorAction SilentlyContinue)
-if ($RunningProcesses) {
-    $RunningProcesses | Stop-Process -Force
-    foreach ($RunningProcess in $RunningProcesses) {
-        $RunningProcess.WaitForExit(5000)
-    }
+New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
+Get-ChildItem -LiteralPath $artifact -File | Where-Object { $_.Extension -in '.exe','.dll' } |
+    ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $installRoot -Force }
+if ($AutoStart) {
+    New-Item -Path $runKey -Force | Out-Null
+    New-ItemProperty -Path $runKey -Name 'CodexWeeklyPetHud' -Value ('"' + $executable + '"') -PropertyType String -Force | Out-Null
 }
-Remove-ItemProperty $RunKey -Name "CodexPetLimitRings" -ErrorAction SilentlyContinue
-New-Item $InstallRoot -ItemType Directory -Force | Out-Null
-Copy-Item (Join-Path $Artifact "*") $InstallRoot -Recurse -Force
-Unblock-File -LiteralPath $Executable
-$StartInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
-    FileName = $Executable
-    WorkingDirectory = $InstallRoot
-    UseShellExecute = $true
-}
-try {
-    $Process = [System.Diagnostics.Process]::Start($StartInfo)
-} catch [System.ComponentModel.Win32Exception] {
-    if ($_.Exception.NativeErrorCode -eq 1223) {
-        throw "Codex Pet HUD가 설치되었지만 Windows가 첫 실행을 취소했습니다(오류 1223). 자동 시작은 등록되지 않았습니다. Windows 보안 또는 조직 정책을 확인한 뒤 install.ps1을 다시 실행하세요."
-    }
-    throw
-}
-Start-Sleep -Seconds 1
-if ($Process.HasExited) {
-    throw "Codex Pet HUD가 시작 직후 종료되었습니다. $env:LOCALAPPDATA\CodexPetLimitRings\Logs\runtime.log를 확인하세요."
-}
-New-ItemProperty $RunKey -Name "CodexPetLimitRings" -Value ('"' + $Executable + '"') -PropertyType String -Force | Out-Null
-Write-Host "Installed Codex Pet HUD: $Executable"
+Start-Process -FilePath $executable -WorkingDirectory $installRoot -WindowStyle Hidden
+Write-Output "Installed: $executable"

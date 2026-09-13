@@ -10,6 +10,31 @@ public sealed record HudPlacement(
 
 public static class HudLayout
 {
+    public static HudPlacement CalculateCapsule(PetAnchor anchor, OverlaySettings settings)
+    {
+        var scale = Math.Clamp(settings.Scale, 0.65, 1.8);
+        var width = 190 * scale;
+        var height = 72 * scale;
+        var gap = Math.Clamp(settings.PotionGap, 0, 160) * scale;
+        var left = anchor.X - width - gap;
+        var right = anchor.Right + gap;
+        var x = settings.Alignment == "left" ? left : right;
+        var y = anchor.CenterY - height / 2;
+        if (settings.Alignment is "above" or "below")
+        {
+            x = anchor.X + (anchor.Width - width) / 2;
+            var above = anchor.Y - height - gap;
+            var below = anchor.Y + anchor.Height + gap;
+            y = settings.Alignment == "above" ? above >= anchor.WorkY ? above : below
+                : below + height <= anchor.WorkBottom ? below : above;
+        }
+        else if (x < anchor.WorkX) x = right;
+        else if (x + width > anchor.WorkRight) x = left;
+        x = Math.Clamp(x + settings.HorizontalOffset, anchor.WorkX, Math.Max(anchor.WorkX, anchor.WorkRight - width));
+        y = Math.Clamp(y + settings.VerticalOffset, anchor.WorkY, Math.Max(anchor.WorkY, anchor.WorkBottom - height));
+        return new(scale, width, height, x, x, y);
+    }
+
     public static HudPlacement Calculate(PetAnchor anchor, OverlaySettings settings)
     {
         var scale = Math.Clamp(settings.Scale, 0.5, 1.8);

@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.0] - 2026-09-13 · Codex Weekly Pet HUD
+
+First Windows x64 release of this weekly pacing fork.
+
+- Chinese 190 × 72 status bar above the real Codex Pet, with remaining quota, pace, ideal remaining percentage and daily budget.
+- Automatic weekly quota reads every 5 minutes, adjustable from 1 to 60 minutes.
+- Chinese reset-time / remaining-quota paste import, local persistence, and manual/automatic mode switching.
+- Public codex-reset.com radar, strong-signal and reset announcements, persistent notification deduplication and stale-data handling.
+- Installed Python networking fallback for public endpoints that reject the native HTTP client.
+- Stop repeatedly raising overlays above other topmost windows; yield the invisible drag proxy and capsule to system tray flyouts and native menus.
+- Portable self-contained Windows x64 package, runtime license notices, checksums, Chinese documentation and repeatable packaging script.
+- Source installer uses the new executable name and registers startup only with explicit `-AutoStart`.
+
+Earlier entries below describe the upstream project; macOS and potion UI features are not the focus of this fork.
+
 All notable changes to Codex Pet HUD are documented here. This project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]

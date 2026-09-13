@@ -12,3 +12,11 @@ platforms/windows/artifacts/
 .vs/
 /artifacts/
 /dist/
+.env
+.env.*
+auth.json
+settings.json
+manual-usage.json
+latest-usage.json
+reset-radar.json
+*.pdb

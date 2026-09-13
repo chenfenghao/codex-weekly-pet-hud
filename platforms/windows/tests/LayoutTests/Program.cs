@@ -3,7 +3,7 @@ using CodexPetLimitRings.Windows.Services;
 using System.Text.Json;
 
 const double epsilon = 0.001;
-var settings = new OverlaySettings { Scale = 0.9575376884422109, PotionGap = 10 };
+var settings = new OverlaySettings { Scale = 0.9575376884422109, PotionGap = 10, Alignment = "right" };
 var anchors = new List<PetAnchor>();
 
 for (var x = 0; x <= 1800; x += 25)
@@ -139,18 +139,18 @@ using var currentProUsage = JsonDocument.Parse(
     """);
 var currentProSnapshot = UsageService.Parse(currentProUsage.RootElement)
     ?? throw new Exception("current Pro usage payload did not parse");
-Equal(0, currentProSnapshot.PrimaryUsed ?? double.NaN, "current Pro 5-hour usage");
+if (currentProSnapshot.PrimaryUsed is not null) throw new Exception("Weekly HUD must not expose model-specific short-window quota.");
 Equal(19, currentProSnapshot.SecondaryUsed ?? double.NaN, "current Pro weekly usage");
 
 Console.WriteLine($"Layout adversarial tests passed: {anchors.Count * 5} movement/alignment cases; fixed={baseline.PotionWidth:F3}x{baseline.PotionHeight:F3}");
 Console.WriteLine("Unified drag tests passed: threshold, potion-to-pet virtual pointer mapping, DPI delta.");
 Console.WriteLine("Pet proxy tests passed: anchor bounds remain the exact interactive surface.");
-Console.WriteLine("Usage compatibility test passed: additional_rate_limits 5-hour + weekly mapping.");
+Console.WriteLine("Usage compatibility test passed: account-wide weekly mapping; model-specific short windows excluded.");
 return;
 
 static void Equal(double expected, double actual, string message)
 {
-    if (Math.Abs(expected - actual) > epsilon) throw new Exception($"{message}: expected {expected}, actual {actual}");
+    if (!double.IsFinite(actual) || !double.IsFinite(expected) || Math.Abs(expected - actual) > epsilon) throw new Exception($"{message}: expected {expected}, actual {actual}");
 }
 
 static void InRange(double value, double minimum, double maximum, string message)

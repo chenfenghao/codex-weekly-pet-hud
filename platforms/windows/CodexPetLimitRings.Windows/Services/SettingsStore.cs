@@ -12,9 +12,31 @@ public sealed class SettingsStore
 
     public string DataDirectory { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "CodexPetLimitRings");
+        "CodexWeeklyPetHud");
     public string SettingsPath => Path.Combine(DataDirectory, "settings.json");
     public string AlertStatePath => Path.Combine(DataDirectory, "alert-state.json");
+    public string ManualUsagePath => Path.Combine(DataDirectory, "manual-usage.json");
+    public string LatestUsagePath => Path.Combine(DataDirectory, "latest-usage.json");
+    public string ResetSignalPath => Path.Combine(DataDirectory, "reset-radar.json");
+    public ResetSignalState LoadResetSignals() => Read<ResetSignalState>(ResetSignalPath) ?? new();
+    public void SaveResetSignals(ResetSignalState value) => Write(ResetSignalPath, value);
+    public UsageSnapshot? LoadLatestUsage()
+    {
+        var value = Read<UsageSnapshot>(LatestUsagePath);
+        return value is { SecondaryUsed: >= 0 and <= 100, SecondaryReset: not null } ? value : null;
+    }
+    public void SaveLatestUsage(UsageSnapshot value) => Write(LatestUsagePath, value);
+    public UsageSnapshot? LoadManualUsage()
+    {
+        var value = Read<UsageSnapshot>(ManualUsagePath);
+        return value is { Source: "manual", SecondaryUsed: >= 0 and <= 100, SecondaryReset: not null } ? value : null;
+    }
+    public void SaveManualUsage(UsageSnapshot value) => Write(ManualUsagePath, value);
+    public void ClearManualUsage()
+    {
+        try { File.Delete(ManualUsagePath); }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException) { AppLog.Write("Manual usage cleanup failed: " + error.Message); }
+    }
 
     public OverlaySettings LoadSettings()
     {

@@ -7,8 +7,14 @@ public sealed class OverlaySettings
     public double Scale { get; set; } = 1;
     public double HorizontalOffset { get; set; }
     public double VerticalOffset { get; set; }
-    public double PotionGap { get; set; } = 10;
-    public string Alignment { get; set; } = "split";
+    public double PotionGap { get; set; } = 6;
+    public string Alignment { get; set; } = "above";
+    public bool AutoReadUsage { get; set; } = true;
+    public int RefreshMinutes { get; set; } = 5;
+    public bool ResetRadarEnabled { get; set; } = true;
+    public bool ResetNotificationsEnabled { get; set; } = true;
+    [JsonIgnore]
+    public TimeSpan RefreshInterval => TimeSpan.FromMinutes(Math.Clamp(RefreshMinutes, 1, 60));
     public bool UsageAlertsEnabled { get; set; } = true;
     public bool NativeNotificationsEnabled { get; set; }
     public int[] AlertThresholds { get; set; } = [20, 10, 5];
@@ -18,7 +24,8 @@ public sealed class OverlaySettings
 
     public void Normalize()
     {
-        if (!double.IsFinite(Scale)) Scale = 1;
+        RefreshMinutes = Math.Clamp(RefreshMinutes, 1, 60);
+        if (!double.IsFinite(Scale)) Scale = 0.65;
         if (!double.IsFinite(HorizontalOffset)) HorizontalOffset = 0;
         if (!double.IsFinite(VerticalOffset)) VerticalOffset = 0;
         if (!double.IsFinite(PotionGap)) PotionGap = 10;
@@ -32,7 +39,7 @@ public sealed class OverlaySettings
             "right" => "right",
             "above" => "above",
             "below" => "below",
-            _ => "split"
+            _ => "right"
         };
         AlertThresholds = (AlertThresholds ?? []).Where(value => value is 20 or 10 or 5).Distinct().OrderByDescending(value => value).ToArray();
         if (LastCleanupAt is { } timestamp)
@@ -84,7 +91,8 @@ public sealed record UsageSnapshot(
     long? PrimaryReset,
     long? SecondaryReset,
     string Source,
-    DateTimeOffset ReadAt)
+    DateTimeOffset ReadAt,
+    double? WeeklyWindowSeconds = null)
 {
     public static UsageSnapshot Empty { get; } = new(null, null, null, null, "none", DateTimeOffset.MinValue);
     public double? PrimaryRemaining => PrimaryUsed is null || !double.IsFinite(PrimaryUsed.Value) ? null : Math.Clamp(100 - PrimaryUsed.Value, 0, 100);

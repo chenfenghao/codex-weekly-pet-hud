@@ -13,11 +13,14 @@ public sealed class MainController : IDisposable
     private readonly SettingsStore _store = new();
     private readonly CodexPetStateReader _stateReader = new();
     private readonly UsageService _usageService = new();
-    private readonly CacheMaintenanceService _cacheService;
-    private readonly ThresholdAlertService _alertService;
+    private readonly ResetSignalService _resetSignalService = new();
+    private readonly CancellationTokenSource _lifetime = new();
+    private ResetSignalState _resetSignals;
+    private DateTimeOffset _lastSignalAttempt = DateTimeOffset.MinValue;
+    private bool _signalsRefreshing;
+    private bool _signalsFailed;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(250) };
-    private readonly PotionWindow _primaryPotion = new("5H", System.Windows.Media.Color.FromRgb(56, 4, 6), System.Windows.Media.Color.FromRgb(184, 9, 14), System.Windows.Media.Color.FromRgb(255, 61, 20), System.Windows.Media.Color.FromRgb(255, 107, 31));
-    private readonly PotionWindow _secondaryPotion = new("WK", System.Windows.Media.Color.FromRgb(6, 18, 61), System.Windows.Media.Color.FromRgb(10, 82, 194), System.Windows.Media.Color.FromRgb(20, 199, 235), System.Windows.Media.Color.FromRgb(46, 224, 255));
+    private readonly PotionWindow _secondaryPotion = new("周", System.Windows.Media.Color.FromRgb(6, 18, 61), System.Windows.Media.Color.FromRgb(10, 82, 194), System.Windows.Media.Color.FromRgb(20, 199, 235), System.Windows.Media.Color.FromRgb(46, 224, 255));
     private readonly PetInputProxyWindow _petInputProxy = new();
     private readonly UnifiedDragController _unifiedDrag = new();
     private readonly UsageDetailsWindow _details = new();
@@ -33,15 +36,18 @@ public sealed class MainController : IDisposable
     private CancellationTokenSource? _usageCancellation;
     private string? _verificationCapturePath;
     private bool _refreshing;
+    private long _usageRevision;
     private bool _petVisible;
+    private bool _yieldingToShell;
     private long _visibilityGeneration;
     private DragPreview? _dragPreview;
 
     public MainController()
     {
         _settings = _store.LoadSettings();
-        _cacheService = new CacheMaintenanceService(_store);
-        _alertService = new ThresholdAlertService(_store);
+        _resetSignals = _store.LoadResetSignals();
+        var saved = _settings.AutoReadUsage ? _store.LoadLatestUsage() ?? _store.LoadManualUsage() : _store.LoadManualUsage();
+        _usage = saved is null ? UsageSnapshot.Empty : _settings.AutoReadUsage ? saved with { Source = "stale" } : saved;
     }
 
     public void Start(bool showSettings = false, string? verificationCapturePath = null)
@@ -49,34 +55,62 @@ public sealed class MainController : IDisposable
         _verificationCapturePath = verificationCapturePath;
         AppLog.Write($"HUD state source: {_stateReader.StatePath}");
         ConfigureTray();
-        _primaryPotion.PotionClicked += () => ShowDetails(_primaryPotion);
-        _secondaryPotion.PotionClicked += () => ShowDetails(_secondaryPotion);
+        _secondaryPotion.PotionClicked += () => { if (_details.IsVisible) _details.Hide(); else ShowDetails(_secondaryPotion); };
         _petInputProxy.PointerPressed += point => BeginUnifiedInteraction(UnifiedDragSurface.Pet, point);
         _petInputProxy.PointerMoved += ContinueUnifiedInteraction;
         _petInputProxy.PointerReleased += EndUnifiedInteraction;
         _petInputProxy.PointerCancelled += CancelUnifiedInteraction;
         _petInputProxy.HoverMoved += ForwardPetHover;
-        BindPotionDrag(_primaryPotion);
         BindPotionDrag(_secondaryPotion);
         _unifiedDrag.DragStarted += BeginDragPreview;
         _unifiedDrag.DragMoved += MoveDragPreview;
         _unifiedDrag.DragFinished += EndDragPreview;
         _unifiedDrag.StatusChanged += AppLog.Write;
         _details.RefreshRequested += () => _ = RefreshUsageAsync(force: true);
+        _details.SettingsRequested += ShowSettings;
+        _details.RadarRefreshRequested += () => _ = RefreshResetSignalsAsync(true);
+        _details.UsageImported += usage =>
+        {
+            _usageRevision++; _usage = usage; _settings.AutoReadUsage = false; _store.SaveSettings(_settings); _store.SaveManualUsage(usage);
+            _secondaryPotion.UpdateUsage(usage.SecondaryRemaining, usage.SecondaryReset, usage.Source);
+            UpdateTrayText();
+        };
         _settingsWindow.SettingsChanged += ApplySettings;
-        _settingsWindow.CleanupRequested += RunCleanup;
         _settingsWindow.Apply(_settings);
         _timer.Tick += (_, _) => Tick();
         _timer.Start();
         Tick();
-        if (showSettings) System.Windows.Application.Current.Dispatcher.BeginInvoke(ShowSettings);
+        if (showSettings) System.Windows.Application.Current.Dispatcher.BeginInvoke(() => ShowDetails(_secondaryPotion));
     }
 
     private void Tick()
     {
         try
         {
-            RunScheduledCleanupIfNeeded();
+            if (_settings.ResetRadarEnabled && DateTimeOffset.Now - _lastSignalAttempt >= _settings.RefreshInterval)
+                _ = RefreshResetSignalsAsync(false);
+            UpdateResetSignalDisplay();
+            if (_details.IsVisible) _details.Update(_usage, _refreshing);
+            // Never let the invisible drag proxy cover the notification area or system menus.
+            // Keep the pet/usage state intact so closing the flyout resumes without a new fetch.
+            if (NativeMethods.IsShellFlyoutOpen())
+            {
+                if (!_yieldingToShell)
+                {
+                    _yieldingToShell = true;
+                    _unifiedDrag.Cancel();
+                    _dragPreview = null;
+                    _petInputProxy.Hide();
+                    _secondaryPotion.Hide();
+                    AppLog.Write("HUD yielded to system flyout; drag proxy hidden.");
+                }
+                return;
+            }
+            if (_yieldingToShell)
+            {
+                _yieldingToShell = false;
+                AppLog.Write("System flyout closed; HUD may resume.");
+            }
             if (_unifiedDrag.IsDragging) return;
             var candidate = _stateReader.ReadVisibleCandidate();
             var anchor = NativeMethods.FindVisiblePetAnchor(candidate, out var anchorDiagnostic);
@@ -131,8 +165,10 @@ public sealed class MainController : IDisposable
             _anchor = anchor;
             PlacePotions(anchor);
             PlacePetInputProxy(anchor);
-            if (!_primaryPotion.IsVisible) _primaryPotion.Show();
             if (!_secondaryPotion.IsVisible) _secondaryPotion.Show();
+            MarkUsageStaleIfNeeded();
+            _secondaryPotion.UpdateUsage(_usage.SecondaryRemaining, _usage.SecondaryReset, _usage.Source);
+            if (_details.IsVisible) _details.Update(_usage, _refreshing);
             UpdatePotionInputRouting(anchor);
             if (!_petInputProxy.IsVisible)
             {
@@ -140,7 +176,7 @@ public sealed class MainController : IDisposable
                 NativeMethods.ConfigurePetInputProxy(_petInputProxy);
             }
             if (_petInputProxy.IsVisible) NativeMethods.PlacePetInputProxy(_petInputProxy);
-            if (justShown || DateTimeOffset.Now - _lastUsageAttempt >= TimeSpan.FromSeconds(30))
+            if (_usage.Source != "manual" && (justShown || DateTimeOffset.Now - _lastUsageAttempt >= _settings.RefreshInterval))
             {
                 _ = RefreshUsageAsync(force: justShown);
             }
@@ -165,19 +201,14 @@ public sealed class MainController : IDisposable
         _dragPreview = null;
         _anchor = null;
         _petInputProxy.Hide();
-        _primaryPotion.Hide();
         _secondaryPotion.Hide();
-        _details.Hide();
         UpdateTrayText();
     }
 
     private void PlacePotions(PetAnchor anchor)
     {
-        var placement = HudLayout.Calculate(anchor, _settings);
-        _primaryPotion.ApplyScale(placement.Scale);
+        var placement = HudLayout.CalculateCapsule(anchor, _settings);
         _secondaryPotion.ApplyScale(placement.Scale);
-        _primaryPotion.Left = placement.PrimaryX;
-        _primaryPotion.Top = placement.Y;
         _secondaryPotion.Left = placement.SecondaryX;
         _secondaryPotion.Top = placement.Y;
     }
@@ -197,7 +228,7 @@ public sealed class MainController : IDisposable
 
     private void BeginUnifiedInteraction(UnifiedDragSurface surface, ScreenPointer pointer)
     {
-        if (!_petVisible ||
+        if (_yieldingToShell || !_petVisible ||
             _anchor is null ||
             !NativeMethods.TryGetPhysicalWindowRect(_petInputProxy, out var petBounds))
         {
@@ -220,8 +251,6 @@ public sealed class MainController : IDisposable
         _details.Hide();
         _dragPreview = new DragPreview(
             anchor,
-            _primaryPotion.Left,
-            _primaryPotion.Top,
             _secondaryPotion.Left,
             _secondaryPotion.Top,
             _petInputProxy.Left,
@@ -235,8 +264,6 @@ public sealed class MainController : IDisposable
     {
         var preview = _dragPreview;
         if (preview is null) return;
-        _primaryPotion.Left = preview.PrimaryLeft + deltaX;
-        _primaryPotion.Top = preview.PrimaryTop + deltaY;
         _secondaryPotion.Left = preview.SecondaryLeft + deltaX;
         _secondaryPotion.Top = preview.SecondaryTop + deltaY;
         _petInputProxy.Left = preview.ProxyLeft + deltaX;
@@ -275,10 +302,6 @@ public sealed class MainController : IDisposable
     private void UpdatePotionInputRouting(PetAnchor anchor)
     {
         NativeMethods.PlacePotionWindow(
-            _primaryPotion,
-            anchor.NativeWindowHandle,
-            directPotionClicksEnabled: true);
-        NativeMethods.PlacePotionWindow(
             _secondaryPotion,
             anchor.NativeWindowHandle,
             directPotionClicksEnabled: true);
@@ -286,9 +309,10 @@ public sealed class MainController : IDisposable
 
     private async Task RefreshUsageAsync(bool force)
     {
-        if (!_petVisible || _refreshing) return;
-        if (!force && DateTimeOffset.Now - _lastUsageAttempt < TimeSpan.FromSeconds(30)) return;
+        if (_refreshing || (!force && (!_petVisible || _usage.Source == "manual"))) return;
+        if (!force && DateTimeOffset.Now - _lastUsageAttempt < _settings.RefreshInterval) return;
         var generation = _visibilityGeneration;
+        var revision = _usageRevision;
         using var cancellation = new CancellationTokenSource();
         _usageCancellation = cancellation;
         _refreshing = true;
@@ -297,21 +321,18 @@ public sealed class MainController : IDisposable
         try
         {
             var refreshed = await _usageService.RefreshAsync(cancellation.Token);
-            if (refreshed is not null && _petVisible && generation == _visibilityGeneration)
+            if (refreshed is not null && revision == _usageRevision && (force || (_petVisible && generation == _visibilityGeneration)))
             {
                 _usage = refreshed;
+                _settings.AutoReadUsage = true; _store.SaveSettings(_settings); _store.SaveLatestUsage(refreshed);
                 _lastUsageSuccess = DateTimeOffset.Now;
-                _primaryPotion.UpdateUsage(_usage.PrimaryRemaining, _usage.PrimaryReset, _usage.Source);
                 _secondaryPotion.UpdateUsage(_usage.SecondaryRemaining, _usage.SecondaryReset, _usage.Source);
-                AppLog.Write(
-                    $"Usage refreshed: 5H={FormatUsageForLog(_usage.PrimaryRemaining)}, " +
-                    $"WK={FormatUsageForLog(_usage.SecondaryRemaining)}, source={_usage.Source}.");
+                AppLog.Write($"Weekly usage refreshed: {_usage.Source}; remaining={_usage.SecondaryRemaining:0.#}%; reset={_usage.SecondaryReset}.");
                 if (_verificationCapturePath is { } capturePath)
                 {
                     _verificationCapturePath = null;
                     _ = CaptureVerificationAsync(capturePath);
                 }
-                foreach (var alert in _alertService.Evaluate(_usage, _settings)) ShowAlert(alert);
             }
             else if (refreshed is null)
             {
@@ -334,20 +355,77 @@ public sealed class MainController : IDisposable
 
     private void MarkUsageStaleIfNeeded()
     {
-        if (_usage.Source == "none" ||
+        if (_usage.Source is "none" or "manual" ||
             _lastUsageSuccess == DateTimeOffset.MinValue ||
-            DateTimeOffset.Now - _lastUsageSuccess < TimeSpan.FromMinutes(2) ||
+            DateTimeOffset.Now - _lastUsageSuccess < _settings.RefreshInterval * 2 ||
             _usage.Source == "stale") return;
         _usage = _usage with { Source = "stale" };
-        _primaryPotion.UpdateUsage(_usage.PrimaryRemaining, _usage.PrimaryReset, _usage.Source);
         _secondaryPotion.UpdateUsage(_usage.SecondaryRemaining, _usage.SecondaryReset, _usage.Source);
         AppLog.Write("Usage data marked stale after repeated refresh failures.");
     }
 
+    private async Task RefreshResetSignalsAsync(bool force)
+    {
+        if (_signalsRefreshing || !_settings.ResetRadarEnabled || _lifetime.IsCancellationRequested) return;
+        if (!force && DateTimeOffset.Now - _lastSignalAttempt < _settings.RefreshInterval) return;
+        _signalsRefreshing = true;
+        _lastSignalAttempt = DateTimeOffset.Now;
+        try
+        {
+            var snapshot = await _resetSignalService.ReadAsync(_lifetime.Token);
+            if (_lifetime.IsCancellationRequested || !_settings.ResetRadarEnabled) return;
+            _signalsFailed = snapshot.Stale;
+            var alerts = ResetSignalPolicy.Accept(_resetSignals, snapshot, _settings.ResetNotificationsEnabled);
+            _store.SaveResetSignals(_resetSignals);
+            AppLog.Write($"Reset radar checked: events={snapshot.Events.Count}; stale={snapshot.Stale}; new={alerts.Count}.");
+            if (alerts.Count > 0)
+            {
+                var latest = alerts[^1];
+                var title = alerts.Count > 1 ? $"发现 {alerts.Count} 条新的重置动态" : latest.Title;
+                _tray.ShowBalloonTip(10000, title, $"codex-reset.com · {latest.At.LocalDateTime:M/d HH:mm}\n点击查看。社区公告不代表你的账户已到账。", Forms.ToolTipIcon.Info);
+            }
+        }
+        catch (Exception error) when (error is HttpRequestException or OperationCanceledException or JsonException or InvalidOperationException or IOException)
+        {
+            if (!_lifetime.IsCancellationRequested) { _signalsFailed = true; AppLog.Write($"Reset radar unavailable: {error.GetType().Name}."); }
+        }
+        finally
+        {
+            _signalsRefreshing = false;
+            if (!_lifetime.IsCancellationRequested) UpdateResetSignalDisplay();
+        }
+    }
+
+    private void UpdateResetSignalDisplay()
+    {
+        var snapshot = _resetSignals.Snapshot;
+        var stale = _signalsFailed || snapshot is not null && DateTimeOffset.UtcNow - snapshot.CheckedAt > _settings.RefreshInterval * 2 + TimeSpan.FromMinutes(1);
+        var highlight = _resetSignals.Highlight is { } h && h.At > DateTimeOffset.UtcNow.AddDays(-1) ? h : null;
+        var attention = _settings.ResetRadarEnabled && !stale && (highlight is not null || snapshot?.ActiveSignal == true);
+        var headline = !_settings.ResetRadarEnabled ? "重置雷达 · 已关闭"
+            : stale ? "重置雷达 · 连接延迟"
+            : snapshot is null ? "重置雷达 · 连接中"
+            : highlight is not null ? highlight.Kind == "watch" ? "雷达 · 新重置信号" : highlight.Kind == "banked" ? "雷达 · 新储备重置公告" : "雷达 · 新重置公告"
+            : snapshot.ActiveSignal ? "雷达 · 有重置信号" : "重置雷达 · 暂无新信号";
+        var details = snapshot is null ? "等待 codex-reset.com 公开 API 数据。" :
+            $"最近检查 {snapshot.CheckedAt.LocalDateTime:M/d HH:mm} · 每 {_settings.RefreshMinutes} 分钟\n上次全局重置公告：{(snapshot.LastResetAt is { } reset ? reset.LocalDateTime.ToString("M/d HH:mm") : "暂无记录")}";
+        var latest = highlight ?? snapshot?.Events.FirstOrDefault();
+        if (latest is not null) details += $"\n{latest.Title} · {latest.At.LocalDateTime:M/d HH:mm}\n{latest.Summary}";
+        if (stale) details += "\n连接或数据延迟，保留上次记录，暂停新信号提醒。";
+        _secondaryPotion.UpdateResetSignal(headline, details, attention);
+        _details.UpdateResetSignal(headline, details, attention, _signalsRefreshing);
+    }
+
     private void ShowDetails(PotionWindow source)
     {
-        if (!_petVisible || _anchor is null) return;
+        if (_resetSignals.Highlight is not null) { _resetSignals.Highlight = null; _store.SaveResetSignals(_resetSignals); }
         _details.Update(_usage, _refreshing);
+        if (_anchor is null)
+        {
+            _details.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+            if (!_details.IsVisible) _details.Show();
+            _details.Activate(); return;
+        }
         PositionDetails(source, _details.MinHeight);
         if (!_details.IsVisible) _details.Show();
         _details.UpdateLayout();
@@ -359,9 +437,9 @@ public sealed class MainController : IDisposable
     {
         if (_anchor is null) return;
         var detailsWidth = double.IsNaN(_details.Width) ? _details.ActualWidth : _details.Width;
-        var preferredLeft = source == _primaryPotion
-            ? source.Left - detailsWidth - 12
-            : source.Left + source.Width + 12;
+        var preferredLeft = source.Left + source.Width + 12;
+        if (preferredLeft + detailsWidth > _anchor.WorkRight)
+            preferredLeft = source.Left - detailsWidth - 12;
         _details.Left = Math.Clamp(preferredLeft, _anchor.WorkX, Math.Max(_anchor.WorkX, _anchor.WorkRight - detailsWidth));
         _details.Top = Math.Clamp(source.Top + (source.Height - detailsHeight) / 2, _anchor.WorkY, Math.Max(_anchor.WorkY, _anchor.WorkBottom - detailsHeight));
     }
@@ -378,61 +456,38 @@ public sealed class MainController : IDisposable
         settings.Normalize();
         _settings = settings;
         _store.SaveSettings(_settings);
+        UpdateResetSignalDisplay();
         if (_anchor is not null) PlacePotions(_anchor);
-    }
-
-    private void RunScheduledCleanupIfNeeded()
-    {
-        if (!_settings.AutoCleanup) return;
-        var last = _settings.LastCleanupAt is null ? DateTimeOffset.MinValue : DateTimeOffset.FromUnixTimeSeconds(_settings.LastCleanupAt.Value);
-        if (DateTimeOffset.Now - last >= TimeSpan.FromDays(1)) RunCleanup();
-    }
-
-    private void RunCleanup()
-    {
-        _settings.LastFreedBytes = _cacheService.Clean();
-        _settings.LastCleanupAt = DateTimeOffset.Now.ToUnixTimeSeconds();
-        _store.SaveSettings(_settings);
-        _settingsWindow.Apply(_settings);
-    }
-
-    private void ShowAlert(ThresholdAlert alert)
-    {
-        if (!_settings.NativeNotificationsEnabled) return;
-        _tray.BalloonTipTitle = alert.Title;
-        _tray.BalloonTipText = alert.Body;
-        _tray.BalloonTipIcon = alert.Threshold <= 5 ? Forms.ToolTipIcon.Warning : Forms.ToolTipIcon.Info;
-        _tray.ShowBalloonTip(5000);
     }
 
     private void ConfigureTray()
     {
         _trayIcon = string.IsNullOrWhiteSpace(Environment.ProcessPath)
-            ? null
-            : Icon.ExtractAssociatedIcon(Environment.ProcessPath);
+            ? null : Icon.ExtractAssociatedIcon(Environment.ProcessPath);
         _tray.Icon = _trayIcon ?? SystemIcons.Application;
-        _tray.Text = "Codex 포션 HUD";
+        _tray.Text = "Codex 周额度";
         _tray.Visible = true;
-        _tray.DoubleClick += (_, _) => ShowSettings();
+        _tray.DoubleClick += (_, _) => ShowDetails(_secondaryPotion);
+        _tray.BalloonTipClicked += (_, _) => ShowDetails(_secondaryPotion);
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("사용량 지금 갱신", null, (_, _) => _ = RefreshUsageAsync(force: true));
-        menu.Items.Add("포션 상세 보기", null, (_, _) => ShowDetails(_primaryPotion));
-        menu.Items.Add("세부 설정…", null, (_, _) => ShowSettings());
-        menu.Items.Add("오버레이 위치 초기화", null, (_, _) => { _settings.HorizontalOffset = 0; _settings.VerticalOffset = 0; ApplySettings(_settings); });
+        menu.Items.Add("查看周额度详情", null, (_, _) => ShowDetails(_secondaryPotion));
+        menu.Items.Add("立即刷新", null, (_, _) => _ = RefreshUsageAsync(force: true));
+        menu.Items.Add("挂件设置（更新间隔 / 外观）…", null, (_, _) => ShowSettings());
+        menu.Items.Add("重置挂件位置", null, (_, _) => {
+            _settings.HorizontalOffset = 0; _settings.VerticalOffset = 0;
+            ApplySettings(_settings);
+        });
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("캐시 지금 정리", null, (_, _) => RunCleanup());
-        menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("종료", null, (_, _) => System.Windows.Application.Current.Shutdown());
+        menu.Items.Add("退出", null, (_, _) => System.Windows.Application.Current.Shutdown());
         _tray.ContextMenuStrip = menu;
     }
 
     private void UpdateTrayText()
     {
-        if (!_petVisible) { _tray.Text = "Codex 포션 HUD · 펫 숨김"; return; }
-        var primary = _usage.PrimaryRemaining is null ? "--" : $"{Math.Round(_usage.PrimaryRemaining.Value):0}%";
-        var weekly = _usage.SecondaryRemaining is null ? "--" : $"{Math.Round(_usage.SecondaryRemaining.Value):0}%";
-        var state = _usage.Source == "stale" ? " · 갱신 지연" : string.Empty;
-        _tray.Text = $"Codex 포션 HUD · 5H {primary} · WK {weekly}{state}";
+        if (!_petVisible) { _tray.Text = "Codex 周额度 · 请打开 Codex 宠物"; return; }
+        var weekly = _usage.SecondaryRemaining is null ? "--" : $"{_usage.SecondaryRemaining:0}%";
+        var state = _usage.Source == "stale" ? " · 更新延迟" : string.Empty;
+        _tray.Text = $"Codex 周额度 · 剩余 {weekly}{state}";
     }
 
     private static string FormatUsageForLog(double? remaining) =>
@@ -450,25 +505,23 @@ public sealed class MainController : IDisposable
                 AppLog.Write("Verification capture skipped: pet anchor is no longer visible.");
                 return;
             }
-            _primaryPotion.UpdateLayout();
             _secondaryPotion.UpdateLayout();
-            if (!NativeMethods.TryGetPhysicalWindowRect(_primaryPotion, out var primaryBounds) ||
-                !NativeMethods.TryGetPhysicalWindowRect(_secondaryPotion, out var secondaryBounds) ||
-                _primaryPotion.ActualWidth <= 0 ||
-                _primaryPotion.ActualHeight <= 0)
+            if (!NativeMethods.TryGetPhysicalWindowRect(_secondaryPotion, out var primaryBounds) ||
+                _secondaryPotion.ActualWidth <= 0 ||
+                _secondaryPotion.ActualHeight <= 0)
             {
                 AppLog.Write("Verification capture skipped: potion window bounds unavailable.");
                 return;
             }
 
-            var scaleX = primaryBounds.Width / _primaryPotion.ActualWidth;
-            var scaleY = primaryBounds.Height / _primaryPotion.ActualHeight;
+            var scaleX = primaryBounds.Width / _secondaryPotion.ActualWidth;
+            var scaleY = primaryBounds.Height / _secondaryPotion.ActualHeight;
             var anchorBounds = new Rectangle(
-                primaryBounds.Left + (int)Math.Round((_anchor.X - _primaryPotion.Left) * scaleX),
-                primaryBounds.Top + (int)Math.Round((_anchor.Y - _primaryPotion.Top) * scaleY),
+                primaryBounds.Left + (int)Math.Round((_anchor.X - _secondaryPotion.Left) * scaleX),
+                primaryBounds.Top + (int)Math.Round((_anchor.Y - _secondaryPotion.Top) * scaleY),
                 Math.Max(1, (int)Math.Round(_anchor.Width * scaleX)),
                 Math.Max(1, (int)Math.Round(_anchor.Height * scaleY)));
-            var captureBounds = Rectangle.Union(Rectangle.Union(primaryBounds, secondaryBounds), anchorBounds);
+            var captureBounds = Rectangle.Union(primaryBounds, anchorBounds);
             captureBounds.Inflate(72, 72);
             captureBounds = Rectangle.Intersect(captureBounds, Forms.SystemInformation.VirtualScreen);
             if (captureBounds.Width <= 0 || captureBounds.Height <= 0)
@@ -494,6 +547,8 @@ public sealed class MainController : IDisposable
 
     public void Dispose()
     {
+        _lifetime.Cancel();
+        _resetSignalService.Dispose();
         _timer.Stop();
         _petVisible = false;
         _usageCancellation?.Cancel();
@@ -503,16 +558,14 @@ public sealed class MainController : IDisposable
         _trayIcon?.Dispose();
         _usageService.Dispose();
         _petInputProxy.Close();
-        _primaryPotion.Close();
         _secondaryPotion.Close();
         _details.ClosePermanently();
         _settingsWindow.ClosePermanently();
+        _lifetime.Dispose();
     }
 
     private sealed record DragPreview(
         PetAnchor Anchor,
-        double PrimaryLeft,
-        double PrimaryTop,
         double SecondaryLeft,
         double SecondaryTop,
         double ProxyLeft,

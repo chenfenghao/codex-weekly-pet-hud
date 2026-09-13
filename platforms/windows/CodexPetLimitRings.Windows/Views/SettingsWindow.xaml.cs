@@ -9,7 +9,6 @@ public partial class SettingsWindow : Window
     private bool _allowClose;
     private OverlaySettings _settings = new();
     public event Action<OverlaySettings>? SettingsChanged;
-    public event Action? CleanupRequested;
 
     public SettingsWindow() => InitializeComponent();
 
@@ -17,6 +16,9 @@ public partial class SettingsWindow : Window
     {
         _applying = true;
         _settings = settings;
+        RefreshMinutes.Value = settings.RefreshMinutes;
+        ResetRadarEnabled.IsChecked = settings.ResetRadarEnabled;
+        ResetNotificationsEnabled.IsChecked = settings.ResetNotificationsEnabled;
         Scale.Value = settings.Scale;
         HorizontalOffset.Value = settings.HorizontalOffset;
         VerticalOffset.Value = settings.VerticalOffset;
@@ -25,32 +27,21 @@ public partial class SettingsWindow : Window
             .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), settings.Alignment, StringComparison.OrdinalIgnoreCase))
             ?? Alignment.Items[0];
         UpdateValueLabels();
-        UsageAlerts.IsChecked = settings.UsageAlertsEnabled;
-        NativeNotifications.IsChecked = settings.NativeNotificationsEnabled;
-        Alert20.IsChecked = settings.AlertThresholds.Contains(20);
-        Alert10.IsChecked = settings.AlertThresholds.Contains(10);
-        Alert5.IsChecked = settings.AlertThresholds.Contains(5);
-        AutoCleanup.IsChecked = settings.AutoCleanup;
-        CleanupStatus.Text = settings.LastCleanupAt is null
-            ? "아직 정리 기록이 없어요."
-            : $"마지막 확보 {FormatBytes(settings.LastFreedBytes)}";
         _applying = false;
     }
 
     private void Control_OnChanged(object sender, RoutedEventArgs e)
     {
         if (_applying || !IsLoaded) return;
+        _settings.RefreshMinutes = (int)Math.Round(RefreshMinutes.Value);
+        _settings.ResetRadarEnabled = ResetRadarEnabled.IsChecked == true;
+        _settings.ResetNotificationsEnabled = ResetNotificationsEnabled.IsChecked == true;
         _settings.Scale = Scale.Value;
         _settings.HorizontalOffset = HorizontalOffset.Value;
         _settings.VerticalOffset = VerticalOffset.Value;
         _settings.PotionGap = PotionGap.Value;
-        _settings.Alignment = (Alignment.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "split";
+        _settings.Alignment = (Alignment.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "right";
         UpdateValueLabels();
-        _settings.UsageAlertsEnabled = UsageAlerts.IsChecked == true;
-        _settings.NativeNotificationsEnabled = NativeNotifications.IsChecked == true;
-        _settings.AlertThresholds = new[] { (20, Alert20), (10, Alert10), (5, Alert5) }
-            .Where(item => item.Item2.IsChecked == true).Select(item => item.Item1).ToArray();
-        _settings.AutoCleanup = AutoCleanup.IsChecked == true;
         SettingsChanged?.Invoke(_settings);
     }
 
@@ -75,14 +66,13 @@ public partial class SettingsWindow : Window
 
     private void UpdateValueLabels()
     {
+        RefreshMinutesValue.Text = $"每 {RefreshMinutes.Value:0} 分钟";
         ScaleValue.Text = $"{Scale.Value * 100:0}%";
         HorizontalOffsetValue.Text = $"{HorizontalOffset.Value:+0;-0;0}px";
         VerticalOffsetValue.Text = $"{VerticalOffset.Value:+0;-0;0}px";
         PotionGapValue.Text = $"{PotionGap.Value:0}px";
     }
 
-    private void CleanupButton_OnClick(object sender, RoutedEventArgs e) => CleanupRequested?.Invoke();
     public void ClosePermanently() { _allowClose = true; Close(); }
     private void Window_OnClosing(object? sender, System.ComponentModel.CancelEventArgs e) { if (!_allowClose) { e.Cancel = true; Hide(); } }
-    private static string FormatBytes(long bytes) => bytes >= 1_048_576 ? $"{bytes / 1_048_576d:0.0} MB" : $"{bytes / 1024d:0} KB";
 }

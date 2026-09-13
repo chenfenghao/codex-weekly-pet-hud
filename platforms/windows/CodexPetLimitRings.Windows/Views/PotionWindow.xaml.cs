@@ -10,7 +10,7 @@ namespace CodexPetLimitRings.Windows.Views;
 
 public partial class PotionWindow : Window
 {
-    private const double GlassSize = 67;
+
     private readonly string _accessibleLabel;
     private double _appliedScale = double.NaN;
     private bool _pointerPressed;
@@ -25,12 +25,7 @@ public partial class PotionWindow : Window
     public PotionWindow(string label, System.Windows.Media.Color dark, System.Windows.Media.Color mid, System.Windows.Media.Color bright, System.Windows.Media.Color surface)
     {
         InitializeComponent();
-        LabelText.Text = label;
-        _accessibleLabel = label == "5H" ? "5시간 포션" : "주간 포션";
-        LiquidDark.Color = dark;
-        LiquidMid.Color = mid;
-        LiquidBright.Color = bright;
-        LiquidSurface.Fill = new SolidColorBrush(surface);
+        _accessibleLabel = "周额度节奏伴侣";
         AutomationProperties.SetName(this, _accessibleLabel);
         AutomationProperties.SetName(Root, _accessibleLabel);
         Root.IsHitTestVisible = true;
@@ -46,60 +41,38 @@ public partial class PotionWindow : Window
 
     public void UpdateUsage(double? remaining, long? resetAt, string source)
     {
-        var percent = remaining is null ? 0 : Math.Clamp(remaining.Value, 0, 100);
-        PercentText.Text = remaining is null ? "—" : $"{Math.Round(percent):0}%";
-        var height = GlassSize * percent / 100;
-        Liquid.Height = height;
-        Canvas.SetTop(Liquid, GlassSize - height);
-        var hasLiquid = remaining is not null && height > 0.5;
-        Liquid.Visibility = hasLiquid ? Visibility.Visible : Visibility.Hidden;
-        LiquidSurface.Visibility = hasLiquid && percent < 99.5 ? Visibility.Visible : Visibility.Hidden;
-        LiquidBubble.Visibility = hasLiquid ? Visibility.Visible : Visibility.Hidden;
-        Canvas.SetTop(LiquidSurface, GlassSize - height - 2.5);
-        Canvas.SetTop(LiquidBubble, Math.Max(GlassSize - height + 4, GlassSize * 0.72));
-        var resetText = FormatResetRemaining(resetAt);
-        var usageText = remaining is null ? "사용량 데이터 없음" : $"남은 사용량 {Math.Round(percent):0}%";
-        var accessibleText = $"{_accessibleLabel}, {usageText}, 초기화까지 {resetText}";
-        AutomationProperties.SetName(this, accessibleText);
-        AutomationProperties.SetName(Root, accessibleText);
-        Root.ToolTip = string.Join(Environment.NewLine,
-            usageText,
-            source == "live" ? "실시간 기준" : source == "none" ? "데이터 대기" : "최근 기록 기준",
-            $"초기화까지 {resetText}");
-    }
-
-    private static string FormatResetRemaining(long? resetAt)
-    {
-        if (resetAt is null) return "확인 중";
-        TimeSpan remaining;
-        try { remaining = DateTimeOffset.FromUnixTimeSeconds(resetAt.Value) - DateTimeOffset.UtcNow; }
-        catch (ArgumentOutOfRangeException) { return "확인 중"; }
-        if (remaining <= TimeSpan.Zero) return "곧 초기화";
-        if (remaining.TotalDays >= 1) return $"{(int)remaining.TotalDays}일 {remaining.Hours}시간";
-        if (remaining.TotalHours >= 1) return $"{(int)remaining.TotalHours}시간 {remaining.Minutes}분";
-        return $"{Math.Max(1, remaining.Minutes)}분";
+        var pace = WeeklyPacing.Calculate(remaining, resetAt, DateTimeOffset.Now);
+        var fresh = source is "live" or "manual";
+        PaceText.Text = source == "none" ? "同步中" : source == "stale" ? "待更新" : pace.Status switch
+        {
+            "待确认重置" => "待重置", "刚刚开始" => "初始期", "检查时间" => "查时间", "等待数据" => "待数据", _ => pace.Status
+        };
+        RemainingText.Text = remaining is { } value ? $"剩余 {value:0.#}%" : "剩余 —";
+        var ideal = fresh && pace.TimePercent is { } time && pace.DailyBudget is not null ? $"{100 - time:0}%" : "—";
+        var daily = fresh && pace.DailyBudget is { } budget ? $"≤{Math.Floor(budget * 10) / 10:0.#}%" : "—";
+        IdealText.Text = $"应剩 {ideal} · 建议 {daily}/天";
+        var countdown = WeeklyPacing.Countdown(resetAt, DateTimeOffset.Now);
+        var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(fresh ? pace.Color : "#9AADA1")!;
+        StatusDot.Fill = brush; PaceText.Foreground = brush;
+        Capsule.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, brush.Color.R, brush.Color.G, brush.Color.B));
+        var sourceText = source == "manual" ? "粘贴记录 · 不自动覆盖" : source == "live" ? "自动更新" : "等待最新数据";
+        Root.ToolTip = $"周额度剩余 {remaining:0.#}% · {pace.Status}\n匀速使用此刻应剩 {ideal}；每日建议 {daily}\n速率 {pace.Ratio:0.00}× · {countdown}\n{pace.Prediction}\n{sourceText}";
+        AutomationProperties.SetName(this, $"{_accessibleLabel}，{Root.ToolTip}");
+        AutomationProperties.SetName(Root, $"{_accessibleLabel}，{Root.ToolTip}");
     }
 
     public void ApplyScale(double scale)
     {
         if (double.IsFinite(_appliedScale) && Math.Abs(_appliedScale - scale) < 0.0001) return;
         _appliedScale = scale;
-        var typeScale = Math.Clamp(scale, 0.75, 1.5);
-        var labelScale = Math.Clamp(scale, 0.9, 1.5);
-        Width = 92 * scale;
-        Height = 110 * scale;
-        PercentBackdrop.Width = 34 * typeScale;
-        PercentBackdrop.Height = 18 * typeScale;
-        PercentBackdrop.CornerRadius = new CornerRadius(3 * typeScale);
-        PercentText.FontSize = 12 * typeScale;
-        Canvas.SetLeft(PercentBackdrop, 46 * scale - PercentBackdrop.Width / 2);
-        Canvas.SetTop(PercentBackdrop, 58 * scale - PercentBackdrop.Height / 2);
-        LabelContainer.Width = 34 * labelScale;
-        LabelContainer.Height = 14 * labelScale;
-        LabelContainer.CornerRadius = new CornerRadius(3 * labelScale);
-        LabelText.FontSize = 10 * labelScale;
-        Canvas.SetLeft(LabelContainer, 46 * scale - LabelContainer.Width / 2);
-        Canvas.SetTop(LabelContainer, 93 * scale - LabelContainer.Height / 2);
+        Width = 190 * scale; Height = 72 * scale;
+    }
+
+    public void UpdateResetSignal(string headline, string detail, bool attention)
+    {
+        ResetSignalText.Text = headline;
+        ResetSignalText.Foreground = attention ? System.Windows.Media.Brushes.Gold : System.Windows.Media.Brushes.DarkSeaGreen;
+        ResetSignalText.ToolTip = detail;
     }
 
     private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs eventArgs)

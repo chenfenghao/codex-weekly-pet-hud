@@ -18,6 +18,7 @@ internal static class NativeMethods
     private const long WsExLayered = 0x00080000;
     private const long WsExNoActivate = 0x08000000;
     private const long WsExToolWindow = 0x00000080;
+    private const long WsExTopmost = 0x00000008;
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoMove = 0x0002;
     private const uint SwpNoZOrder = 0x0004;
@@ -71,6 +72,9 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr parameter);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetClassName(IntPtr handle, StringBuilder className, int maxCount);
 
     [DllImport("user32.dll")]
     private static extern bool IsWindowVisible(IntPtr handle);
@@ -162,6 +166,8 @@ internal static class NativeMethods
     {
         var handle = new WindowInteropHelper(window).Handle;
         if (handle == IntPtr.Zero) return;
+        // Keep the topmost band, but do not jump ahead of menus opened afterwards.
+        if ((GetExtendedStyle(handle) & WsExTopmost) != 0) return;
         SetWindowPos(
             handle,
             HwndTopmost,
@@ -171,6 +177,26 @@ internal static class NativeMethods
             0,
             SwpNoMove | SwpNoSize | SwpNoActivate);
     }
+
+    public static bool IsShellFlyoutOpen()
+    {
+        var found = false;
+        EnumWindows((handle, _) =>
+        {
+            if (!IsActuallyVisible(handle)) return true;
+            var buffer = new StringBuilder(256);
+            GetClassName(handle, buffer, buffer.Capacity);
+            var name = buffer.ToString();
+            found = IsShellFlyoutClass(name) || name == "Windows.UI.Core.CoreWindow" &&
+                (IsProcessNamed(handle, "ShellExperienceHost") || IsProcessNamed(handle, "StartMenuExperienceHost"));
+            return !found;
+        }, IntPtr.Zero);
+        return found;
+    }
+
+    internal static bool IsShellFlyoutClass(string name) => name is
+        "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" or
+        "ControlCenterWindow" or "#32768";
 
     public static bool TryBeginPetPointerRelay(
         nint targetHandle,
@@ -343,7 +369,8 @@ internal static class NativeMethods
         var flags = SwpNoMove | SwpNoSize | SwpNoActivate;
         if (directPotionClicksEnabled)
         {
-            SetWindowPos(handle, HwndTopmost, 0, 0, 0, 0, flags);
+            if ((GetExtendedStyle(handle) & WsExTopmost) == 0)
+                SetWindowPos(handle, HwndTopmost, 0, 0, 0, 0, flags);
             return;
         }
 

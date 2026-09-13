@@ -4,7 +4,7 @@ internal static class AppLog
 {
     private static readonly string Path = System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "CodexPetLimitRings",
+        "CodexWeeklyPetHud",
         "Logs",
         "runtime.log");
 
