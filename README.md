@@ -7,6 +7,8 @@
 <p>
   <img src="docs/images/capsule.png" alt="剩余额度、当前节奏、应剩比例、每日建议和重置雷达" width="285">
   <img src="docs/images/radar-alert.png" alt="新重置信号高亮第三行" width="285">
+  <img width="331" height="283" alt="image" src="https://github.com/user-attachments/assets/b05a28ce-4096-4125-9ea2-27dc9cf1b601" />
+
 </p>
 
 *以上为程序渲染的示例数据，不是实时账户用量或实时公告。宠物由 Codex 提供，本版不另行打包 Codex Pet 角色文件。*
