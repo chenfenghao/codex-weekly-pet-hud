@@ -1,5 +1,7 @@
 # Codex Weekly Pet HUD · 周额度节奏挂件
 
+**简体中文** · [English](README.en.md)
+
 放在 **Codex Pet 上方**的轻量 Windows 状态条：看剩余额度、判断使用快慢，并接收社区重置信号提醒。
 
 [下载 Windows x64 便携版](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) · [使用与构建](platforms/windows/README.md) · [更新记录](CHANGELOG.md) · [MIT 许可证](LICENSE)
@@ -13,6 +15,7 @@
 
 ## 功能
 
+- **中英文界面**：在设置中即时切换，自动保存语言；同一个程序即可使用，无需分别安装。
 - **三行状态条**：默认约 190 × 72 DIP，可缩放；显示剩余、节奏、匀速应剩、每日建议和重置雷达。
 - **自动读取周额度**：默认每 5 分钟更新，设置中可调为 1–60 分钟，也可立即刷新。
 - **跟随真实 Pet**：从宠物或状态条拖动；支持位置、偏移和间距调整，屏幕边缘自动避让。
@@ -24,17 +27,20 @@
 
 ## 下载与启动
 
-1. 在 [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) 下载 `Codex-Weekly-Pet-HUD-v1.0.0-Windows-x64.zip`。
+1. 在 [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) 下载 `Codex-Weekly-Pet-HUD-v1.1.0-Windows-x64.zip`。
 2. **完整解压**到固定目录，保留 EXE 旁边的 DLL 文件。
 3. 双击 `CodexWeeklyPetHud.exe`，然后在 Codex 中打开 Pet。
 4. 单击状态条查看详情，点「设置」调整间隔、位置、大小和提醒；系统托盘菜单也能进入设置或退出。
+5. 在「设置 → 语言 / Language」选择 **English** 或 **简体中文**，状态条、详情、设置、提示、托盘菜单和通知会即时切换，重启后保留选择。
+
+默认语言为简体中文。切换语言不改变额度、重置时间、刷新间隔、位置或通知记录；公告原文和粘贴输入保留原样。输入识别在两种界面下均支持中英文。
 
 系统要求：Windows 10/11 x64、已登录且支持 Pet 的 Codex 桌面端。便携包自带 .NET 8 运行时，无需另装 .NET。本版本未做代码签名，Windows 可能显示未知发布者提示，请确认下载来源和校验值。
 
 升级时先通过托盘退出旧版，再解压新版；设置保存在用户数据目录，不因替换程序文件丢失。卸载便携版时退出并删除解压目录即可。
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.0.0-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.1.0-Windows-x64.zip -Algorithm SHA256
 ```
 
 将结果与同一 Release 的 `SHA256SUMS.txt` 对照。
@@ -121,7 +127,7 @@ Get-FileHash .\Codex-Weekly-Pet-HUD-v1.0.0-Windows-x64.zip -Algorithm SHA256
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.0.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.1.0
 ```
 
 产物在 `dist`，包含便携 ZIP 与 SHA-256 校验文件。打包脚本只读取构建输出和项目文档，不读取用户数据目录。也可直接构建：

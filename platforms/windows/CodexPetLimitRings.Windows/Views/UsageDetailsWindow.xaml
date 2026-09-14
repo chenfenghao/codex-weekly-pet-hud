@@ -1,6 +1,6 @@
 <Window x:Class="CodexPetLimitRings.Windows.Views.UsageDetailsWindow"
- xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="周额度 · 节奏伴侣" Width="370" Height="680" MinHeight="450" ResizeMode="NoResize" WindowStyle="ToolWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:CodexPetLimitRings.Windows"
+ Title="{local:Tr '周额度 · 节奏伴侣'}" Width="370" Height="680" MinHeight="450" ResizeMode="NoResize" WindowStyle="ToolWindow"
  ShowInTaskbar="False" Topmost="True" Background="#1A201D" Foreground="#E7ECEA" FontFamily="Microsoft YaHei UI"
  Closing="Window_OnClosing">
  <Window.Resources>
@@ -8,34 +8,34 @@
   <Style TargetType="TextBox"><Setter Property="Background" Value="#131A16"/><Setter Property="Foreground" Value="#CDD7D0"/><Setter Property="BorderBrush" Value="#36453B"/><Setter Property="Padding" Value="9"/><Setter Property="CaretBrush" Value="White"/></Style>
  </Window.Resources>
  <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="23">
-  <DockPanel><Button Content="设置" DockPanel.Dock="Right" Click="Settings_OnClick" Background="#293A30" Foreground="#BDD2C4" Padding="8,3"/><TextBlock Text="本周节奏" Foreground="#A4AFA8" FontSize="12"/><TextBlock x:Name="StatusText" HorizontalAlignment="Right" FontSize="12" Margin="0,0,12,0"/></DockPanel>
+  <DockPanel><Button Content="{local:Tr '设置'}" DockPanel.Dock="Right" Click="Settings_OnClick" Background="#293A30" Foreground="#BDD2C4" Padding="8,3"/><TextBlock Text="{local:Tr '本周节奏'}" Foreground="#A4AFA8" FontSize="12"/><TextBlock x:Name="StatusText" HorizontalAlignment="Right" FontSize="12" Margin="0,0,12,0"/></DockPanel>
   <TextBlock x:Name="RemainingText" Text="—%" FontSize="44" Margin="0,17,0,0"/>
-  <TextBlock Text="剩余可用额度" Foreground="#939E98" FontSize="11" Margin="0,0,0,18"/>
-  <DockPanel><TextBlock Text="额度已用" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="UsedText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>
+  <TextBlock Text="{local:Tr '剩余可用额度'}" Foreground="#939E98" FontSize="11" Margin="0,0,0,18"/>
+  <DockPanel><TextBlock Text="{local:Tr '额度已用'}" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="UsedText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>
   <ProgressBar x:Name="UsedBar" Height="5" Maximum="100" Margin="0,8,0,15" Background="#2B352E" Foreground="#9BDFB5" BorderThickness="0"/>
-  <DockPanel><TextBlock Text="时间已过" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="TimeText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>
+  <DockPanel><TextBlock Text="{local:Tr '时间已过'}" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="TimeText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>
   <ProgressBar x:Name="TimeBar" Height="5" Maximum="100" Margin="0,8,0,18" Background="#2B352E" Foreground="#66796E" BorderThickness="0"/>
   <Grid Margin="0,4,0,16"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-   <StackPanel><TextBlock Text="使用速率" FontSize="11" Foreground="#939E98"/><TextBlock x:Name="RatioText" FontSize="22" Margin="0,6,0,0"/></StackPanel>
-   <StackPanel Grid.Column="1"><TextBlock Text="后续每日上限" FontSize="11" Foreground="#939E98"/><TextBlock x:Name="BudgetText" FontSize="20" Margin="0,6,0,0"/></StackPanel>
+   <StackPanel><TextBlock Text="{local:Tr '使用速率'}" FontSize="11" Foreground="#939E98"/><TextBlock x:Name="RatioText" FontSize="22" Margin="0,6,0,0"/></StackPanel>
+   <StackPanel Grid.Column="1"><TextBlock Text="{local:Tr '后续每日上限'}" FontSize="11" Foreground="#939E98"/><TextBlock x:Name="BudgetText" FontSize="20" Margin="0,6,0,0"/></StackPanel>
   </Grid>
   <TextBlock x:Name="PredictionText" FontSize="11" TextWrapping="Wrap" LineHeight="19"/>
   <TextBlock x:Name="CountdownText" FontSize="13" Margin="0,16,0,5"/>
   <TextBlock x:Name="ResetText" FontSize="11" Foreground="#939E98"/>
   <Border Padding="10" Margin="0,15,0,0" CornerRadius="9" Background="#202D25" BorderBrush="#3D5947" BorderThickness="1">
    <StackPanel>
-    <TextBlock x:Name="RadarHeadline" Text="重置雷达 · 连接中" FontSize="12" Foreground="#A8C9B4"/>
+    <TextBlock x:Name="RadarHeadline" Text="{local:Tr '重置雷达 · 连接中'}" FontSize="12" Foreground="#A8C9B4"/>
     <TextBlock x:Name="RadarDetail" FontSize="10" Foreground="#ADBBB2" TextWrapping="Wrap" Margin="0,8,0,8" MaxHeight="105" TextTrimming="CharacterEllipsis"/>
-    <DockPanel><Button Content="查看来源 ↗" Click="RadarSource_OnClick" Background="#304B3A" Foreground="#DAE7DE" Padding="8,5" HorizontalAlignment="Left"/><Button x:Name="RadarRefresh" Content="检查信号" Click="RadarRefresh_OnClick" Background="#304B3A" Foreground="#DAE7DE" Padding="8,5" HorizontalAlignment="Right"/></DockPanel>
-    <TextBlock Text="社区公告与信号，不代表你的账户额度已重置。" FontSize="10" Foreground="#8FAD98" TextWrapping="Wrap" Margin="0,5,0,0"/>
+    <DockPanel><Button Content="{local:Tr '查看来源 ↗'}" Click="RadarSource_OnClick" Background="#304B3A" Foreground="#DAE7DE" Padding="8,5" HorizontalAlignment="Left"/><Button x:Name="RadarRefresh" Content="{local:Tr '检查信号'}" Click="RadarRefresh_OnClick" Background="#304B3A" Foreground="#DAE7DE" Padding="8,5" HorizontalAlignment="Right"/></DockPanel>
+    <TextBlock Text="{local:Tr '社区公告与信号，不代表你的账户额度已重置。'}" FontSize="10" Foreground="#8FAD98" TextWrapping="Wrap" Margin="0,5,0,0"/>
    </StackPanel>
   </Border>
   <Separator Margin="0,18,0,14" Background="#36453B"/>
-  <DockPanel><Button Content="📋 剪贴板" Click="Paste_OnClick" HorizontalAlignment="Left"/><TextBlock Text="或在下方 Ctrl+V" FontSize="10" Foreground="#939E98" HorizontalAlignment="Right" VerticalAlignment="Center"/></DockPanel>
+  <DockPanel><Button Content="{local:Tr '📋 剪贴板'}" Click="Paste_OnClick" HorizontalAlignment="Left"/><TextBlock Text="{local:Tr '或在下方 Ctrl+V'}" FontSize="10" Foreground="#939E98" HorizontalAlignment="Right" VerticalAlignment="Center"/></DockPanel>
   <TextBox x:Name="PasteInput" Height="64" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="12" Margin="0,10,0,9" ToolTip="重置时间：2026年9月19日 16:12&#10;剩余 80%"/>
-  <DockPanel><Button Content="识别并保存" Click="Import_OnClick" HorizontalAlignment="Left"/><Button x:Name="RefreshButton" Content="自动读取额度" Click="RefreshButton_OnClick" HorizontalAlignment="Right" Background="#293A30" Foreground="#BDD2C4"/></DockPanel>
+  <DockPanel><Button Content="{local:Tr '识别并保存'}" Click="Import_OnClick" HorizontalAlignment="Left"/><Button x:Name="RefreshButton" Content="{local:Tr '自动读取额度'}" Click="RefreshButton_OnClick" HorizontalAlignment="Right" Background="#293A30" Foreground="#BDD2C4"/></DockPanel>
   <TextBlock x:Name="MessageText" FontSize="11" Foreground="#9BDFB5" TextWrapping="Wrap" Margin="0,9,0,0"/>
   <TextBlock x:Name="SourceText" FontSize="10" Foreground="#939E98" Margin="0,12,0,0" TextWrapping="Wrap"/>
-  <TextBlock Text="应剩＝100%−本周时间进度；建议每日上限＝剩余额度按剩余天数均摊。点击上方「设置」调整自动读取间隔，默认 5 分钟；手动粘贴后暂停自动覆盖。" FontSize="10" Foreground="#75867A" TextWrapping="Wrap" LineHeight="17" Margin="0,7,0,0"/>
+  <TextBlock Text="{local:Tr '应剩＝100%−本周时间进度；建议每日上限＝剩余额度按剩余天数均摊。点击上方「设置」调整自动读取间隔，默认 5 分钟；手动粘贴后暂停自动覆盖。'}" FontSize="10" Foreground="#75867A" TextWrapping="Wrap" LineHeight="17" Margin="0,7,0,0"/>
  </StackPanel></ScrollViewer>
 </Window>

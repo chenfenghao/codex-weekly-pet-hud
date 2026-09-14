@@ -11,6 +11,13 @@ public partial class App : System.Windows.Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        var languageTest = Array.IndexOf(e.Args, "--language-self-test");
+        if (languageTest >= 0 && languageTest + 1 < e.Args.Length)
+        {
+            var directory = Path.GetFullPath(e.Args[languageTest + 1]);
+            Dispatcher.BeginInvoke(async () => Shutdown(await LanguageSelfTest.RunAsync(directory)));
+            return;
+        }
         var overlayTest = Array.IndexOf(e.Args, "--overlay-order-self-test");
         if (overlayTest >= 0 && overlayTest + 1 < e.Args.Length)
         {

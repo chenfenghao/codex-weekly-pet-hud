@@ -4,6 +4,7 @@ namespace CodexPetLimitRings.Windows;
 
 public sealed class OverlaySettings
 {
+    public string Language { get; set; } = "zh-CN";
     public double Scale { get; set; } = 1;
     public double HorizontalOffset { get; set; }
     public double VerticalOffset { get; set; }
@@ -24,6 +25,7 @@ public sealed class OverlaySettings
 
     public void Normalize()
     {
+        Language = Language?.Trim().ToLowerInvariant() is "en" or "en-us" or "en-gb" ? "en" : "zh-CN";
         RefreshMinutes = Math.Clamp(RefreshMinutes, 1, 60);
         if (!double.IsFinite(Scale)) Scale = 0.65;
         if (!double.IsFinite(HorizontalOffset)) HorizontalOffset = 0;

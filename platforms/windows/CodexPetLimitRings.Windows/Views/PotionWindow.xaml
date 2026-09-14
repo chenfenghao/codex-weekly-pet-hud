@@ -1,5 +1,5 @@
 <Window x:Class="CodexPetLimitRings.Windows.Views.PotionWindow"
- xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:CodexPetLimitRings.Windows"
  Width="190" Height="72" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
  Topmost="False" ShowInTaskbar="False" ShowActivated="False" ResizeMode="NoResize" UseLayoutRounding="True">
  <Button x:Name="Root" Cursor="SizeAll" Focusable="False" Background="Transparent" BorderThickness="0" Padding="0" Margin="0"
@@ -7,13 +7,13 @@
   <Button.Template><ControlTemplate TargetType="Button"><ContentPresenter/></ControlTemplate></Button.Template>
   <Viewbox Stretch="Uniform"><Border x:Name="Capsule" Width="190" Height="72" CornerRadius="16" Background="#F218201B" BorderBrush="#405C7565" BorderThickness="1" Padding="12,7">
    <Grid><Grid.RowDefinitions><RowDefinition Height="21"/><RowDefinition Height="15"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-    <TextBlock x:Name="RemainingText" Foreground="#E7ECEA" Text="剩余 —" FontFamily="Microsoft YaHei UI" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+    <TextBlock x:Name="RemainingText" Foreground="#E7ECEA" Text="{local:Tr '剩余 —'}" FontFamily="Microsoft YaHei UI" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
      <Ellipse x:Name="StatusDot" Width="5" Height="5" Fill="#9BDFB5" Margin="0,0,5,0"/>
-     <TextBlock x:Name="PaceText" Foreground="#9BDFB5" Text="同步中" FontFamily="Microsoft YaHei UI" FontSize="11"/>
+     <TextBlock x:Name="PaceText" Foreground="#9BDFB5" Text="{local:Tr '同步中'}" FontFamily="Microsoft YaHei UI" FontSize="11"/>
     </StackPanel>
-    <TextBlock x:Name="IdealText" Grid.Row="1" Foreground="#AFC3B7" Text="应剩 — · 建议 — /天" FontFamily="Microsoft YaHei UI" FontSize="10" VerticalAlignment="Bottom"/>
-    <TextBlock x:Name="ResetSignalText" Grid.Row="2" Foreground="#9ABDAA" Text="重置雷达 · 连接中" FontFamily="Microsoft YaHei UI" FontSize="10" VerticalAlignment="Bottom"/>
+    <TextBlock x:Name="IdealText" Grid.Row="1" Foreground="#AFC3B7" Text="{local:Tr '应剩 — · 建议 — /天'}" FontFamily="Microsoft YaHei UI" FontSize="10" VerticalAlignment="Bottom"/>
+    <TextBlock x:Name="ResetSignalText" Grid.Row="2" Foreground="#9ABDAA" Text="{local:Tr '重置雷达 · 连接中'}" FontFamily="Microsoft YaHei UI" FontSize="10" VerticalAlignment="Bottom"/>
    </Grid>
   </Border></Viewbox>
  </Button>

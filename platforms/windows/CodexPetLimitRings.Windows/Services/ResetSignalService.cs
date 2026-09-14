@@ -5,7 +5,7 @@ namespace CodexPetLimitRings.Windows.Services;
 public sealed record ResetSignalEvent(string Id, string Kind, string State, DateTimeOffset At, string Summary)
 {
     public string Key => $"{Id}|{Kind}|{State}";
-    public string Title => Kind == "watch" ? "新的重置信号" : Kind == "banked" ? "新的储备重置公告" : State == "confirmed" ? "社区已确认重置公告" : "新的重置公告（待核实）";
+    public string Title => UiText.T(Kind == "watch" ? "新的重置信号" : Kind == "banked" ? "新的储备重置公告" : State == "confirmed" ? "社区已确认重置公告" : "新的重置公告（待核实）");
 }
 
 public sealed record ResetSignalSnapshot(DateTimeOffset CheckedAt, DateTimeOffset UpdatedAt, DateTimeOffset? LastResetAt, bool Stale, bool ActiveSignal, List<ResetSignalEvent> Events);

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidatePattern('^v\d+\.\d+\.\d+$')][string]$Tag = 'v1.0.0',
+    [ValidatePattern('^v\d+\.\d+\.\d+$')][string]$Tag = 'v1.1.0',
     [string]$DotnetPath = 'dotnet'
 )
 $ErrorActionPreference = 'Stop'
@@ -18,16 +18,17 @@ New-Item -ItemType Directory -Path $packageRoot,$dist -Force | Out-Null
 # A fresh staging directory and explicit extensions prevent cached settings or logs entering releases.
 Get-ChildItem -LiteralPath $publishRoot -File | Where-Object { $_.Extension -in '.exe','.dll' } |
     ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $packageRoot }
-foreach ($document in 'README.md','LICENSE','CHANGELOG.md') {
+foreach ($document in 'README.md','README.en.md','LICENSE','CHANGELOG.md') {
     Copy-Item -LiteralPath (Join-Path $repoRoot $document) -Destination $packageRoot
 }
 $imageRoot = Join-Path $packageRoot 'docs/images'
 $platformDocs = Join-Path $packageRoot 'platforms/windows'
 New-Item -ItemType Directory -Path $imageRoot,$platformDocs -Force | Out-Null
-foreach ($name in 'capsule.png','radar-alert.png') {
+foreach ($name in 'capsule.png','radar-alert.png','capsule.en.png','radar-alert.en.png') {
     Copy-Item -LiteralPath (Join-Path $repoRoot "docs/images/$name") -Destination $imageRoot
 }
 Copy-Item -LiteralPath (Join-Path $repoRoot 'platforms/windows/README.md') -Destination $platformDocs
+Copy-Item -LiteralPath (Join-Path $repoRoot 'platforms/windows/README.en.md') -Destination $platformDocs
 # Include the licenses of the exact NuGet runtimes selected by restore.
 $assets = Get-Content -LiteralPath (Join-Path (Split-Path $project) 'obj/project.assets.json') -Raw | ConvertFrom-Json
 $notices = Join-Path $packageRoot 'licenses'

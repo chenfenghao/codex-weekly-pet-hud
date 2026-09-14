@@ -16,6 +16,8 @@ public partial class SettingsWindow : Window
     {
         _applying = true;
         _settings = settings;
+        UiText.SetLanguage(settings.Language);
+        LanguageChoice.SelectedItem = LanguageChoice.Items.Cast<ComboBoxItem>().First(item => item.Tag?.ToString() == settings.Language);
         RefreshMinutes.Value = settings.RefreshMinutes;
         ResetRadarEnabled.IsChecked = settings.ResetRadarEnabled;
         ResetNotificationsEnabled.IsChecked = settings.ResetNotificationsEnabled;
@@ -33,6 +35,8 @@ public partial class SettingsWindow : Window
     private void Control_OnChanged(object sender, RoutedEventArgs e)
     {
         if (_applying || !IsLoaded) return;
+        _settings.Language = (LanguageChoice.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "zh-CN";
+        UiText.SetLanguage(_settings.Language);
         _settings.RefreshMinutes = (int)Math.Round(RefreshMinutes.Value);
         _settings.ResetRadarEnabled = ResetRadarEnabled.IsChecked == true;
         _settings.ResetNotificationsEnabled = ResetNotificationsEnabled.IsChecked == true;
@@ -47,7 +51,7 @@ public partial class SettingsWindow : Window
 
     private void ResetButton_OnClick(object sender, RoutedEventArgs e)
     {
-        Apply(new OverlaySettings());
+        Apply(new OverlaySettings { Language = _settings.Language });
         SettingsChanged?.Invoke(_settings);
     }
 
@@ -66,7 +70,7 @@ public partial class SettingsWindow : Window
 
     private void UpdateValueLabels()
     {
-        RefreshMinutesValue.Text = $"每 {RefreshMinutes.Value:0} 分钟";
+        RefreshMinutesValue.Text = UiText.F("每 {0:0} 分钟", RefreshMinutes.Value);
         ScaleValue.Text = $"{Scale.Value * 100:0}%";
         HorizontalOffsetValue.Text = $"{HorizontalOffset.Value:+0;-0;0}px";
         VerticalOffsetValue.Text = $"{VerticalOffset.Value:+0;-0;0}px";

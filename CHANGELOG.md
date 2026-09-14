@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0] - 2026-09-14 · Chinese / English
+
+- Add instant Chinese/English switching under Settings → Language, with a saved preference and Chinese fallback for existing settings.
+- Translate the HUD, details, settings, tooltips, validation messages, tray menu and reset notifications. Preserve account values, reset timestamps and notification identity across language changes.
+- Add English date/countdown formatting and compact HUD labels; widen the English details panel to keep controls readable.
+- Add English main and Windows READMEs, language links, example screenshots, and both languages in portable packages.
+- Add checks for translation format arguments, live switching, persistence, bilingual input, notification identity and English layout.
+
 ## [1.0.0] - 2026-09-13 · Codex Weekly Pet HUD
 
 First Windows x64 release of this weekly pacing fork.

@@ -1,58 +1,65 @@
 <Window x:Class="CodexPetLimitRings.Windows.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="周额度 · 挂件设置" Width="520" Height="620" MinWidth="480" MinHeight="450"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:CodexPetLimitRings.Windows"
+        Title="{local:Tr '周额度 · 挂件设置'}" Width="520" Height="620" MinWidth="480" MinHeight="450"
         FontFamily="Microsoft YaHei UI" Background="#FAFAFA" WindowStartupLocation="CenterScreen" Closing="Window_OnClosing">
   <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel Margin="22">
       <DockPanel Margin="0,0,0,18">
-        <Button DockPanel.Dock="Right" Content="恢复默认" Click="ResetButton_OnClick" />
-        <StackPanel><TextBlock Text="Codex 周额度" FontSize="21" FontWeight="Bold"/><TextBlock Text="修改后立即生效，自动保存" Foreground="#71717A"/></StackPanel>
+        <Button DockPanel.Dock="Right" Content="{local:Tr '恢复默认'}" Click="ResetButton_OnClick" />
+        <StackPanel><TextBlock Text="{local:Tr 'Codex 周额度'}" FontSize="21" FontWeight="Bold"/><TextBlock Text="{local:Tr '修改后立即生效，自动保存'}" Foreground="#71717A"/></StackPanel>
       </DockPanel>
 
+      <DockPanel Margin="0,0,0,15">
+        <TextBlock Text="{local:Tr '语言 / Language'}" VerticalAlignment="Center"/>
+        <ComboBox x:Name="LanguageChoice" Width="160" HorizontalAlignment="Right" SelectionChanged="Control_OnChanged">
+          <ComboBoxItem Tag="zh-CN" Content="简体中文"/>
+          <ComboBoxItem Tag="en" Content="English"/>
+        </ComboBox>
+      </DockPanel>
       <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
         <StackPanel>
-          <TextBlock Text="自动更新" FontSize="15" FontWeight="SemiBold"/>
-          <DockPanel Margin="0,10,0,5"><TextBlock Text="读取额度的间隔"/><TextBlock x:Name="RefreshMinutesValue" HorizontalAlignment="Right" FontWeight="SemiBold"/></DockPanel>
+          <TextBlock Text="{local:Tr '自动更新'}" FontSize="15" FontWeight="SemiBold"/>
+          <DockPanel Margin="0,10,0,5"><TextBlock Text="{local:Tr '读取额度的间隔'}"/><TextBlock x:Name="RefreshMinutesValue" HorizontalAlignment="Right" FontWeight="SemiBold"/></DockPanel>
           <Slider x:Name="RefreshMinutes" Minimum="1" Maximum="60" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Control_OnChanged"/>
-          <TextBlock Text="1–60 分钟可调，默认 5 分钟。倒计时持续更新；点击「自动读取额度」可立即刷新。" Foreground="#71717A" TextWrapping="Wrap" Margin="0,8,0,0"/>
-          <CheckBox x:Name="ResetRadarEnabled" Content="监控 codex-reset.com 重置信号" Margin="0,12,0,5" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
-          <CheckBox x:Name="ResetNotificationsEnabled" Content="新信号通过 Windows 通知提醒" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
-          <TextBlock Text="沿用上方间隔；宠物隐藏时仍检查信号。首次连接只记录历史，同一事件不重复提醒。" Foreground="#71717A" TextWrapping="Wrap" Margin="0,7,0,0"/>
+          <TextBlock Text="{local:Tr '1–60 分钟可调，默认 5 分钟。倒计时持续更新；点击「自动读取额度」可立即刷新。'}" Foreground="#71717A" TextWrapping="Wrap" Margin="0,8,0,0"/>
+          <CheckBox x:Name="ResetRadarEnabled" Content="{local:Tr '监控 codex-reset.com 重置信号'}" Margin="0,12,0,5" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+          <CheckBox x:Name="ResetNotificationsEnabled" Content="{local:Tr '新信号通过 Windows 通知提醒'}" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+          <TextBlock Text="{local:Tr '沿用上方间隔；宠物隐藏时仍检查信号。首次连接只记录历史，同一事件不重复提醒。'}" Foreground="#71717A" TextWrapping="Wrap" Margin="0,7,0,0"/>
         </StackPanel>
       </Border>
 
       <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
         <StackPanel>
-          <TextBlock Text="位置" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="状态条跟随 Codex 宠物，靠近屏幕边缘时自动换侧。" Foreground="#71717A" Margin="0,2,0,12"/>
-          <TextBlock Text="相对宠物的位置"/>
+          <TextBlock Text="{local:Tr '位置'}" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="{local:Tr '状态条跟随 Codex 宠物，靠近屏幕边缘时自动换侧。'}" Foreground="#71717A" Margin="0,2,0,12"/>
+          <TextBlock Text="{local:Tr '相对宠物的位置'}"/>
           <ComboBox x:Name="Alignment" Margin="0,5,0,12" SelectionChanged="Control_OnChanged">
 
-            <ComboBoxItem Tag="left" Content="左侧"/>
-            <ComboBoxItem Tag="right" Content="右侧"/>
-            <ComboBoxItem Tag="above" Content="上方"/>
-            <ComboBoxItem Tag="below" Content="下方"/>
+            <ComboBoxItem Tag="left" Content="{local:Tr '左侧'}"/>
+            <ComboBoxItem Tag="right" Content="{local:Tr '右侧'}"/>
+            <ComboBoxItem Tag="above" Content="{local:Tr '上方'}"/>
+            <ComboBoxItem Tag="below" Content="{local:Tr '下方'}"/>
           </ComboBox>
-          <DockPanel><TextBlock Text="水平偏移"/><TextBlock x:Name="HorizontalOffsetValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel><TextBlock Text="{local:Tr '水平偏移'}"/><TextBlock x:Name="HorizontalOffsetValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
           <Slider x:Name="HorizontalOffset" Minimum="-400" Maximum="400" TickFrequency="1" ValueChanged="Control_OnChanged"/>
-          <DockPanel Margin="0,10,0,0"><TextBlock Text="垂直偏移"/><TextBlock x:Name="VerticalOffsetValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel Margin="0,10,0,0"><TextBlock Text="{local:Tr '垂直偏移'}"/><TextBlock x:Name="VerticalOffsetValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
           <Slider x:Name="VerticalOffset" Minimum="-300" Maximum="300" TickFrequency="1" ValueChanged="Control_OnChanged"/>
           <UniformGrid Columns="5" Margin="0,12,0,0">
-            <Button Content="←" Tag="left" Click="NudgeButton_OnClick" Margin="2" ToolTip="向左 5 像素"/>
-            <Button Content="↑" Tag="up" Click="NudgeButton_OnClick" Margin="2" ToolTip="向上 5 像素"/>
-            <Button Content="归位" Tag="center" Click="NudgeButton_OnClick" Margin="2"/>
-            <Button Content="↓" Tag="down" Click="NudgeButton_OnClick" Margin="2" ToolTip="向下 5 像素"/>
-            <Button Content="→" Tag="right" Click="NudgeButton_OnClick" Margin="2" ToolTip="向右 5 像素"/>
+            <Button Content="←" Tag="left" Click="NudgeButton_OnClick" Margin="2" ToolTip="{local:Tr '向左 5 像素'}"/>
+            <Button Content="↑" Tag="up" Click="NudgeButton_OnClick" Margin="2" ToolTip="{local:Tr '向上 5 像素'}"/>
+            <Button Content="{local:Tr '归位'}" Tag="center" Click="NudgeButton_OnClick" Margin="2"/>
+            <Button Content="↓" Tag="down" Click="NudgeButton_OnClick" Margin="2" ToolTip="{local:Tr '向下 5 像素'}"/>
+            <Button Content="→" Tag="right" Click="NudgeButton_OnClick" Margin="2" ToolTip="{local:Tr '向右 5 像素'}"/>
           </UniformGrid>
         </StackPanel>
       </Border>
 
       <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
         <StackPanel>
-          <TextBlock Text="大小与间距" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="默认 190 × 72，可继续缩放。" Foreground="#71717A" Margin="0,2,0,12"/>
-          <DockPanel><TextBlock Text="状态条大小"/><TextBlock x:Name="ScaleValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
+          <TextBlock Text="{local:Tr '大小与间距'}" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="{local:Tr '默认 190 × 72，可继续缩放。'}" Foreground="#71717A" Margin="0,2,0,12"/>
+          <DockPanel><TextBlock Text="{local:Tr '状态条大小'}"/><TextBlock x:Name="ScaleValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
           <Slider x:Name="Scale" Minimum="0.5" Maximum="1.8" TickFrequency="0.05" ValueChanged="Control_OnChanged"/>
-          <DockPanel Margin="0,10,0,0"><TextBlock Text="与宠物的间距"/><TextBlock x:Name="PotionGapValue" DockPanel.Dock="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel Margin="0,10,0,0"><TextBlock Text="{local:Tr '与宠物的间距'}"/><TextBlock x:Name="PotionGapValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
           <Slider x:Name="PotionGap" Minimum="0" Maximum="160" TickFrequency="1" ValueChanged="Control_OnChanged"/>
         </StackPanel>
       </Border>

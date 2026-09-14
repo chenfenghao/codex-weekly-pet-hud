@@ -26,8 +26,8 @@ public partial class PotionWindow : Window
     {
         InitializeComponent();
         _accessibleLabel = "周额度节奏伴侣";
-        AutomationProperties.SetName(this, _accessibleLabel);
-        AutomationProperties.SetName(Root, _accessibleLabel);
+        AutomationProperties.SetName(this, UiText.T(_accessibleLabel));
+        AutomationProperties.SetName(Root, UiText.T(_accessibleLabel));
         Root.IsHitTestVisible = true;
         SourceInitialized += (_, _) =>
         {
@@ -43,22 +43,22 @@ public partial class PotionWindow : Window
     {
         var pace = WeeklyPacing.Calculate(remaining, resetAt, DateTimeOffset.Now);
         var fresh = source is "live" or "manual";
-        PaceText.Text = source == "none" ? "同步中" : source == "stale" ? "待更新" : pace.Status switch
+        PaceText.Text = UiText.T(source == "none" ? "同步中" : source == "stale" ? "待更新" : pace.Status switch
         {
             "待确认重置" => "待重置", "刚刚开始" => "初始期", "检查时间" => "查时间", "等待数据" => "待数据", _ => pace.Status
-        };
-        RemainingText.Text = remaining is { } value ? $"剩余 {value:0.#}%" : "剩余 —";
+        });
+        RemainingText.Text = remaining is { } value ? UiText.F("剩余 {0:0.#}%", value) : UiText.T("剩余 —");
         var ideal = fresh && pace.TimePercent is { } time && pace.DailyBudget is not null ? $"{100 - time:0}%" : "—";
         var daily = fresh && pace.DailyBudget is { } budget ? $"≤{Math.Floor(budget * 10) / 10:0.#}%" : "—";
-        IdealText.Text = $"应剩 {ideal} · 建议 {daily}/天";
+        IdealText.Text = UiText.F("应剩 {0} · 建议 {1}/天", ideal, daily);
         var countdown = WeeklyPacing.Countdown(resetAt, DateTimeOffset.Now);
         var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(fresh ? pace.Color : "#9AADA1")!;
         StatusDot.Fill = brush; PaceText.Foreground = brush;
         Capsule.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, brush.Color.R, brush.Color.G, brush.Color.B));
-        var sourceText = source == "manual" ? "粘贴记录 · 不自动覆盖" : source == "live" ? "自动更新" : "等待最新数据";
-        Root.ToolTip = $"周额度剩余 {remaining:0.#}% · {pace.Status}\n匀速使用此刻应剩 {ideal}；每日建议 {daily}\n速率 {pace.Ratio:0.00}× · {countdown}\n{pace.Prediction}\n{sourceText}";
-        AutomationProperties.SetName(this, $"{_accessibleLabel}，{Root.ToolTip}");
-        AutomationProperties.SetName(Root, $"{_accessibleLabel}，{Root.ToolTip}");
+        var sourceText = UiText.T(source == "manual" ? "粘贴记录 · 不自动覆盖" : source == "live" ? "自动更新" : "等待最新数据");
+        Root.ToolTip = UiText.F("周额度剩余 {0:0.#}% · {1}\n匀速使用此刻应剩 {2}；每日建议 {3}\n速率 {4:0.00}× · {5}\n{6}\n{7}", remaining, UiText.T(pace.Status), ideal, daily, pace.Ratio, countdown, pace.Prediction, sourceText);
+        AutomationProperties.SetName(this, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
+        AutomationProperties.SetName(Root, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
     }
 
     public void ApplyScale(double scale)

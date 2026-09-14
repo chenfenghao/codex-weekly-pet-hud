@@ -45,6 +45,7 @@ public sealed class MainController : IDisposable
     public MainController()
     {
         _settings = _store.LoadSettings();
+        UiText.SetLanguage(_settings.Language);
         _resetSignals = _store.LoadResetSignals();
         var saved = _settings.AutoReadUsage ? _store.LoadLatestUsage() ?? _store.LoadManualUsage() : _store.LoadManualUsage();
         _usage = saved is null ? UsageSnapshot.Empty : _settings.AutoReadUsage ? saved with { Source = "stale" } : saved;
@@ -55,6 +56,7 @@ public sealed class MainController : IDisposable
         _verificationCapturePath = verificationCapturePath;
         AppLog.Write($"HUD state source: {_stateReader.StatePath}");
         ConfigureTray();
+        _details.ApplyLanguage();
         _secondaryPotion.PotionClicked += () => { if (_details.IsVisible) _details.Hide(); else ShowDetails(_secondaryPotion); };
         _petInputProxy.PointerPressed += point => BeginUnifiedInteraction(UnifiedDragSurface.Pet, point);
         _petInputProxy.PointerMoved += ContinueUnifiedInteraction;
@@ -381,8 +383,8 @@ public sealed class MainController : IDisposable
             if (alerts.Count > 0)
             {
                 var latest = alerts[^1];
-                var title = alerts.Count > 1 ? $"发现 {alerts.Count} 条新的重置动态" : latest.Title;
-                _tray.ShowBalloonTip(10000, title, $"codex-reset.com · {latest.At.LocalDateTime:M/d HH:mm}\n点击查看。社区公告不代表你的账户已到账。", Forms.ToolTipIcon.Info);
+                var title = alerts.Count > 1 ? UiText.F("发现 {0} 条新的重置动态", alerts.Count) : latest.Title;
+                _tray.ShowBalloonTip(10000, title, UiText.F("codex-reset.com · {0:M/d HH:mm}\n点击查看。社区公告不代表你的账户已到账。", latest.At.LocalDateTime), Forms.ToolTipIcon.Info);
             }
         }
         catch (Exception error) when (error is HttpRequestException or OperationCanceledException or JsonException or InvalidOperationException or IOException)
@@ -407,11 +409,12 @@ public sealed class MainController : IDisposable
             : snapshot is null ? "重置雷达 · 连接中"
             : highlight is not null ? highlight.Kind == "watch" ? "雷达 · 新重置信号" : highlight.Kind == "banked" ? "雷达 · 新储备重置公告" : "雷达 · 新重置公告"
             : snapshot.ActiveSignal ? "雷达 · 有重置信号" : "重置雷达 · 暂无新信号";
-        var details = snapshot is null ? "等待 codex-reset.com 公开 API 数据。" :
-            $"最近检查 {snapshot.CheckedAt.LocalDateTime:M/d HH:mm} · 每 {_settings.RefreshMinutes} 分钟\n上次全局重置公告：{(snapshot.LastResetAt is { } reset ? reset.LocalDateTime.ToString("M/d HH:mm") : "暂无记录")}";
+        headline = UiText.T(headline);
+        var details = snapshot is null ? UiText.T("等待 codex-reset.com 公开 API 数据。") :
+            UiText.F("最近检查 {0:M/d HH:mm} · 每 {1} 分钟\n上次全局重置公告：{2}", snapshot.CheckedAt.LocalDateTime, _settings.RefreshMinutes, snapshot.LastResetAt is { } reset ? UiText.Date(reset.LocalDateTime) : UiText.T("暂无记录"));
         var latest = highlight ?? snapshot?.Events.FirstOrDefault();
         if (latest is not null) details += $"\n{latest.Title} · {latest.At.LocalDateTime:M/d HH:mm}\n{latest.Summary}";
-        if (stale) details += "\n连接或数据延迟，保留上次记录，暂停新信号提醒。";
+        if (stale) details += UiText.T("\n连接或数据延迟，保留上次记录，暂停新信号提醒。");
         _secondaryPotion.UpdateResetSignal(headline, details, attention);
         _details.UpdateResetSignal(headline, details, attention, _signalsRefreshing);
     }
@@ -456,8 +459,20 @@ public sealed class MainController : IDisposable
         settings.Normalize();
         _settings = settings;
         _store.SaveSettings(_settings);
+        UiText.SetLanguage(_settings.Language);
+        _details.ApplyLanguage();
+        _details.Update(_usage, _refreshing);
+        _secondaryPotion.UpdateUsage(_usage.SecondaryRemaining, _usage.SecondaryReset, _usage.Source);
+        if (_tray.ContextMenuStrip is { } menu)
+            foreach (Forms.ToolStripItem item in menu.Items)
+                if (item.Tag is string key) item.Text = UiText.T(key);
+        UpdateTrayText();
         UpdateResetSignalDisplay();
-        if (_anchor is not null) PlacePotions(_anchor);
+        if (_anchor is not null)
+        {
+            PlacePotions(_anchor);
+            if (_details.IsVisible) PositionDetails(_secondaryPotion, _details.ActualHeight);
+        }
     }
 
     private void ConfigureTray()
@@ -465,29 +480,30 @@ public sealed class MainController : IDisposable
         _trayIcon = string.IsNullOrWhiteSpace(Environment.ProcessPath)
             ? null : Icon.ExtractAssociatedIcon(Environment.ProcessPath);
         _tray.Icon = _trayIcon ?? SystemIcons.Application;
-        _tray.Text = "Codex 周额度";
+        _tray.Text = UiText.T("Codex 周额度");
         _tray.Visible = true;
         _tray.DoubleClick += (_, _) => ShowDetails(_secondaryPotion);
         _tray.BalloonTipClicked += (_, _) => ShowDetails(_secondaryPotion);
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("查看周额度详情", null, (_, _) => ShowDetails(_secondaryPotion));
-        menu.Items.Add("立即刷新", null, (_, _) => _ = RefreshUsageAsync(force: true));
-        menu.Items.Add("挂件设置（更新间隔 / 外观）…", null, (_, _) => ShowSettings());
-        menu.Items.Add("重置挂件位置", null, (_, _) => {
+        void AddItem(string key, EventHandler handler) { var item = menu.Items.Add(UiText.T(key), null, handler); item.Tag = key; }
+        AddItem("查看周额度详情", (_, _) => ShowDetails(_secondaryPotion));
+        AddItem("立即刷新", (_, _) => _ = RefreshUsageAsync(force: true));
+        AddItem("挂件设置（更新间隔 / 外观）…", (_, _) => ShowSettings());
+        AddItem("重置挂件位置", (_, _) => {
             _settings.HorizontalOffset = 0; _settings.VerticalOffset = 0;
             ApplySettings(_settings);
         });
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("退出", null, (_, _) => System.Windows.Application.Current.Shutdown());
+        AddItem("退出", (_, _) => System.Windows.Application.Current.Shutdown());
         _tray.ContextMenuStrip = menu;
     }
 
     private void UpdateTrayText()
     {
-        if (!_petVisible) { _tray.Text = "Codex 周额度 · 请打开 Codex 宠物"; return; }
+        if (!_petVisible) { _tray.Text = UiText.T("Codex 周额度 · 请打开 Codex 宠物"); return; }
         var weekly = _usage.SecondaryRemaining is null ? "--" : $"{_usage.SecondaryRemaining:0}%";
-        var state = _usage.Source == "stale" ? " · 更新延迟" : string.Empty;
-        _tray.Text = $"Codex 周额度 · 剩余 {weekly}{state}";
+        var state = _usage.Source == "stale" ? UiText.T(" · 更新延迟") : string.Empty;
+        _tray.Text = UiText.F("Codex 周额度 · 剩余 {0}{1}", weekly, state);
     }
 
     private static string FormatUsageForLog(double? remaining) =>
