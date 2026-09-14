@@ -9,6 +9,8 @@ A compact Windows status bar **above your Codex Pet**. Track your remaining week
 <p>
   <img src="docs/images/capsule.en.png" alt="Remaining weekly quota, pace, target remaining quota, daily budget and reset radar" width="285">
   <img src="docs/images/radar-alert.en.png" alt="Highlighted reset signal in the third row" width="285">
+  <img width="326" height="346" alt="image" src="https://github.com/user-attachments/assets/e4a29b1a-56e0-4975-bee6-c72c7969aade" />
+
 </p>
 
 *Screenshots use sample data rendered by the app, not live account usage or announcements. Codex supplies the Pet; this release does not bundle Codex Pet character files.*
