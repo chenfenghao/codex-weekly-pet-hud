@@ -2,6 +2,8 @@
 
 [简体中文](README.md) · **English**
 
+[Project website](https://chenfenghao.github.io/codex-weekly-pet-hud/en/) · [中文官网](https://chenfenghao.github.io/codex-weekly-pet-hud/)
+
 A compact Windows status bar **above your Codex Pet**. Track your remaining weekly quota, see whether your usage is on pace, and receive community reset alerts.
 
 [Download Windows x64](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) · [Windows development guide](platforms/windows/README.en.md) · [Changelog](CHANGELOG.md) · [MIT License](LICENSE)

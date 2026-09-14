@@ -2,6 +2,8 @@
 
 **简体中文** · [English](README.en.md)
 
+[项目官网](https://chenfenghao.github.io/codex-weekly-pet-hud/) · [English website](https://chenfenghao.github.io/codex-weekly-pet-hud/en/)
+
 放在 **Codex Pet 上方**的轻量 Windows 状态条：看剩余额度、判断使用快慢，并接收社区重置信号提醒。
 
 [下载 Windows x64 便携版](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) · [使用与构建](platforms/windows/README.md) · [更新记录](CHANGELOG.md) · [MIT 许可证](LICENSE)

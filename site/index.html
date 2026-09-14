@@ -1,116 +1,52 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090b12">
-  <meta name="description" content="See your five-hour and weekly Codex usage at a glance as two potions beside your pet.">
-  <meta property="og:title" content="Codex Pet HUD">
-  <meta property="og:description" content="See your Codex usage at a glance.">
-  <meta property="og:image" content="https://himomohi.github.io/codex-pet-hud/assets/images/codex-pet-hud-hero.png">
+  <meta name="theme-color" content="#101612">
+  <title>Codex Weekly Pet HUD · 周额度节奏挂件</title>
+  <meta name="description" content="Codex Pet 上方的 Windows 周额度监控挂件。查看剩余额度、使用节奏和每日建议，支持中英文界面、可调刷新与社区重置信号提醒。开源、免费、便携。">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://chenfenghao.github.io/codex-weekly-pet-hud/">
+  <link rel="alternate" hreflang="zh-CN" href="https://chenfenghao.github.io/codex-weekly-pet-hud/">
+  <link rel="alternate" hreflang="en" href="https://chenfenghao.github.io/codex-weekly-pet-hud/en/">
+  <link rel="alternate" hreflang="x-default" href="https://chenfenghao.github.io/codex-weekly-pet-hud/">
   <meta property="og:type" content="website">
-  <title>Codex Pet HUD</title>
-  <link rel="icon" type="image/png" href="assets/images/pet-aware-magic.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;800&amp;family=Noto+Sans+KR:wght@400;600;800&amp;display=swap" rel="stylesheet">
+  <meta property="og:site_name" content="Codex Weekly Pet HUD">
+  <meta property="og:title" content="Codex Weekly Pet HUD · 周额度节奏挂件">
+  <meta property="og:description" content="Codex Pet 上方的 Windows 周额度监控挂件。查看剩余额度、使用节奏和每日建议，支持中英文界面、可调刷新与社区重置信号提醒。开源、免费、便携。">
+  <meta property="og:url" content="https://chenfenghao.github.io/codex-weekly-pet-hud/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://chenfenghao.github.io/codex-weekly-pet-hud/assets/images/capsule.png">
+  <meta property="og:image:alt" content="剩余额度 / 匀速应剩 / 每日建议 / 重置雷达">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
   <link rel="stylesheet" href="assets/site.css">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Codex Weekly Pet HUD", "url": "https://chenfenghao.github.io/codex-weekly-pet-hud/", "description": "Codex Pet 上方的 Windows 周额度监控挂件。查看剩余额度、使用节奏和每日建议，支持中英文界面、可调刷新与社区重置信号提醒。开源、免费、便携。", "operatingSystem": "Windows 10, Windows 11 (x64)", "applicationCategory": "DeveloperApplication", "inLanguage": ["zh-CN", "en"], "license": "https://github.com/chenfenghao/codex-weekly-pet-hud/blob/main/LICENSE", "downloadUrl": "https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}</script>
   <script src="assets/site.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="#top" aria-label="Codex Pet HUD home"><span class="brand-pixel" aria-hidden="true"></span>Codex Pet HUD</a>
-    <nav aria-label="Primary navigation">
-      <a href="#story" data-i18n="navStory">Story</a>
-      <a href="#download" data-i18n="navDownload">Download</a>
-      <a href="#changelog" data-i18n="navChangelog">Changelog</a>
-      <a href="https://github.com/himomohi/codex-pet-hud">GitHub</a>
-    </nav>
-    <div class="languages" aria-label="Language">
-      <button type="button" data-lang="ko">KO</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="zh">中文</button><button type="button" data-lang="ja">日本語</button>
-    </div>
+  <a class="skip" href="#main">跳到正文</a>
+  <header class="header wrap">
+    <a class="brand" href="./"><img src="assets/icon.svg" width="28" height="28" alt="">Codex Weekly Pet HUD</a>
+    <nav aria-label="主导航"><a href="#features">功能</a><a href="#setup">使用方法</a><a href="#download">下载</a></nav>
+    <a class="language" href="en/" lang="en" hreflang="en">English ↗</a>
   </header>
-
-  <main id="top">
-    <section class="hero">
-      <img class="hero-art" src="assets/images/codex-pet-hud-hero.png" alt="A pixel-art orange cat sitting between a red potion and a blue potion">
-      <div class="hero-shade"></div>
-      <div class="hero-copy reveal">
-        <p class="eyebrow">CODEX PET HUD · OPEN SOURCE</p>
-        <h1 data-i18n="heroTitle">See your Codex usage.<br><em>At a glance.</em></h1>
-        <p data-i18n="heroBody">Five-hour and weekly limits become clear, glanceable potions beside your Codex pet.</p>
-        <div class="actions">
-          <a class="button primary" id="heroDownload" href="https://github.com/himomohi/codex-pet-hud/releases" data-i18n="downloadLatest">Download preview</a>
-          <a class="button quiet" href="#story" data-i18n="meetHud">Meet the HUD ↓</a>
-        </div>
-        <p class="release-status"><span class="status-dot"></span><span id="heroVersion" data-i18n="checkingRelease">Checking latest release…</span></p>
+  <main id="main">
+    <section class="hero wrap">
+      <div class="hero-copy"><p class="eyebrow"><span></span>WINDOWS · 开源桌面挂件</p><h1>Codex 周额度，<br><span>一眼看清节奏。</span></h1><p class="intro">剩下多少，应该用多快。把周额度、使用节奏和重置信号放在你的 Codex Pet 上方，专心做事，也心里有数。</p>
+        <div class="actions"><a class="button primary" data-download href="https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest">下载 Windows x64 <span aria-hidden="true">↓</span></a><a class="text-link" href="https://github.com/chenfenghao/codex-weekly-pet-hud">查看源码 ↗</a></div>
+        <p class="release-status" data-release-status aria-live="polite">从 GitHub 获取最新稳定版</p>
       </div>
+      <figure class="preview"><figcaption><span class="preview-dot"></span>真实界面 · 示例数据</figcaption><div class="preview-inner"><img src="assets/images/capsule.png" width="380" height="144" alt="剩余额度 / 匀速应剩 / 每日建议 / 重置雷达"><div class="tether"></div><div class="pet-label">跟随你现有的 Codex Pet</div></div><p class="preview-caption">剩余额度 / 匀速应剩 / 每日建议 / 重置雷达</p></figure>
     </section>
-
-    <section class="manifesto" id="story">
-      <p class="section-index">01 / PET-AWARE</p>
-      <h2 data-i18n="storyTitle">It follows your pet,<br>not your keyboard.</h2>
-      <div class="story-grid">
-        <div class="story-copy reveal">
-          <p data-i18n="storyBody">When the Codex pet disappears, the potions and network refresh disappear with it. Bring the pet back and the HUD returns automatically.</p>
-          <ul>
-            <li data-i18n="featureNative">Native Swift/AppKit and .NET 8/WPF</li>
-            <li data-i18n="featurePrivacy">No keyboard capture. No token logging.</li>
-            <li data-i18n="featureCenter">The original pet stays centered and clickable.</li>
-          </ul>
-        </div>
-        <figure class="pixel-frame reveal">
-          <img src="assets/images/pet-aware-magic.png" alt="Pixel-art cat hiding while red and blue potion bottles fade into sparkles" loading="lazy">
-        </figure>
-      </div>
-    </section>
-
-    <section class="download" id="download">
-      <p class="section-index">02 / GET THE HUD</p>
-      <div class="download-heading">
-        <h2 data-i18n="downloadTitle">Pick your potion pack.</h2>
-        <p data-i18n="downloadBody">Every preview includes source-linked builds and a SHA-256 checksum. No administrator access is required.</p>
-      </div>
-      <div class="release-meta"><span id="releaseVersion">Preview</span><span id="releaseDate">—</span><span class="preview-tag">UNSIGNED PREVIEW</span></div>
-      <div class="download-list">
-        <a class="download-row recommended" id="macDownload" href="https://github.com/himomohi/codex-pet-hud/releases">
-          <span class="platform-mark">⌘</span><span><strong>macOS Universal</strong><small data-i18n="macRequirement">macOS 13+ · Apple Silicon + Intel</small></span><span class="arrow">↓</span>
-        </a>
-        <a class="download-row" id="winX64Download" href="https://github.com/himomohi/codex-pet-hud/releases">
-          <span class="platform-mark">⊞</span><span><strong>Windows x64</strong><small data-i18n="windowsRequirement">Windows 10/11 · x64</small></span><span class="arrow">↓</span>
-        </a>
-        <a class="download-row" id="winArmDownload" href="https://github.com/himomohi/codex-pet-hud/releases">
-          <span class="platform-mark">⊞</span><span><strong>Windows ARM64</strong><small data-i18n="windowsArmRequirement">Windows 11 · ARM64</small></span><span class="arrow">↓</span>
-        </a>
-        <a class="download-row checksum" id="checksumDownload" href="https://github.com/himomohi/codex-pet-hud/releases">
-          <span class="platform-mark">#</span><span><strong>SHA256SUMS.txt</strong><small data-i18n="verifyDownload">Verify your download</small></span><span class="arrow">↓</span>
-        </a>
-      </div>
-      <aside class="warning"><strong data-i18n="previewWarningTitle">Preview warning</strong><span data-i18n="previewWarning">These builds are not yet notarized or code-signed. Gatekeeper or SmartScreen may show an unknown-developer warning. Download only from the official GitHub Releases page.</span></aside>
-    </section>
-
-    <section class="changelog" id="changelog">
-      <p class="section-index">03 / CHANGELOG</p>
-      <div class="changelog-layout">
-        <h2 id="releaseHeading">What’s new</h2>
-        <div class="release-notes reveal">
-          <p class="date" id="changelogDate">—</p>
-          <div id="releaseChanges"><p data-i18n="releaseFallback">See the latest categorized changes on GitHub.</p></div>
-          <a href="https://github.com/himomohi/codex-pet-hud/blob/main/CHANGELOG.md" data-i18n="fullChangelog">Read the full changelog →</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="final-cta">
-      <p data-i18n="finalEyebrow">A tiny companion for long coding sessions.</p>
-      <h2 data-i18n="finalTitle">Give your pet<br>a pair of potions.</h2>
-      <div class="actions">
-        <a class="button primary" href="#download" data-i18n="chooseDownload">Choose a download</a>
-        <a class="button quiet" href="https://github.com/himomohi/codex-pet-hud" data-i18n="viewSource">View source</a>
-      </div>
-    </section>
+    <div class="stats wrap"><div><strong>190 × 72</strong><span>默认尺寸 · 可缩放</span></div><div><strong>1–60 min</strong><span>更新间隔 · 默认 5 分钟</span></div><div><strong>中文 / EN</strong><span>界面语言 · 随时切换</span></div></div>
+    <section class="section wrap" id="features"><p class="eyebrow">01 / FEATURES</p><h2>需要的信息，刚好够用。</h2><div class="features"><article><span class="index">01</span><h3>看懂使用节奏</h3><p>比较本周时间进度与额度消耗，显示偏慢、稳健、偏快或超速，估算耗尽时间和后续每日额度。</p></article><article><span class="index">02</span><h3>重置信号到来时提醒</h3><p>从 codex-reset.com 读取公开社区信号。新强信号或重置公告高亮并可通知；历史公告静默，同一状态不重复提醒。</p></article><article><span class="index">03</span><h3>跟随宠物，也会让路</h3><p>拖动宠物或状态条一起移动。打开受支持的系统托盘面板时，状态条和拖拽层暂时隐藏，让蓝牙等按钮正常可点。</p></article></div></section>
+    <section class="pace wrap"><div><p class="eyebrow">02 / YOUR PACE</p><h2>「剩余」是现状，<br>「应剩」是参照。</h2><p>速率 R = 已用额度百分比 ÷ 本周已过时间百分比。例如时间已过 40%、额度已用 60%，R = 1.5，代表超速。</p><p class="small">按固定 7 天窗口与平均速率估算。到达重置时间后等待真实数据，不会擅自补满额度。</p></div><div class="pace-bands"><div><i></i><strong>偏慢</strong><span>R &lt; 0.85</span></div><div><i></i><strong>稳健</strong><span>0.85 ≤ R ≤ 1</span></div><div><i></i><strong>偏快</strong><span>1 &lt; R ≤ 1.3</span></div><div><i></i><strong>超速</strong><span>R &gt; 1.3</span></div></div></section>
+    <section class="section wrap setup" id="setup"><div><p class="eyebrow">03 / GET STARTED</p><h2>解压，打开，就位。</h2><a class="text-link" href="https://github.com/chenfenghao/codex-weekly-pet-hud/blob/main/README.md">阅读完整中文说明 ↗</a></div><ol><li><span>01</span><div><h3>完整解压下载包</h3><p>运行 CodexWeeklyPetHud.exe，保留旁边的 DLL 文件；无需单独安装 .NET。</p></div></li><li><span>02</span><div><h3>在 Codex 中打开 Pet</h3><p>挂件自动跟随。单击状态条查看详情，进入设置调整间隔、大小和位置。</p></div></li><li><span>03</span><div><h3>选好语言与输入方式</h3><p>设置 → 语言 / Language 切换中英文。自动读取不可用时，可以粘贴重置时间和剩余百分比。</p></div></li></ol></section>
+    <section class="download wrap" id="download"><p class="eyebrow">WINDOWS x64 · MIT</p><h2>给 Pet 加一条状态栏。</h2><p>Windows 10/11 x64 · .NET 8 运行时已包含 · 便携版不注册开机启动</p><div class="actions"><a class="button primary" data-download href="https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest">下载 Windows x64 <span aria-hidden="true">↓</span></a><a class="text-link" data-checksum href="https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest">SHA-256 校验文件 ↗</a><a class="text-link" data-release-link href="https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest">版本记录 ↗</a></div><p class="small unsigned">当前构建未签名，Windows 可能提示未知发布者。升级前先从托盘退出旧版，并核对同一 Release 的 SHA256SUMS.txt。</p></section>
+    <section class="section wrap privacy"><div><p class="eyebrow">04 / CLEAR BOUNDARIES</p><h2>数据边界清楚，状态也清楚。</h2><p>账户额度通过本机 Codex 登录读取，不记录 token；社区雷达使用独立的公开接口，不发送 OpenAI 凭据。宠物隐藏后雷达仍检查，账户用量读取暂停。网络失败会显示延迟，不会伪装成没有信号。</p><p class="notice">社区公告不代表你的账户已重置。雷达不会修改额度，也不会兑换重置次数。</p></div><div class="faq"><details><summary>没看到状态条？</summary><p>先检查系统托盘，并在 Codex 中打开 Pet。系统面板展开时状态条会暂时隐藏。</p></details><details><summary>为什么显示连接延迟？</summary><p>检查网站访问与系统代理。公开雷达接口拒绝原生客户端时，可使用本机已安装的 Python 作为兼容方式；程序不自动安装 Python。</p></details><details><summary>支持 macOS 或 ARM64 吗？</summary><p>此分支目前只发布和验证 Windows x64，其他平台的上游代码保留作参考。</p></details></div></section>
   </main>
-
-  <footer><span>Codex Pet HUD · MIT</span><span data-i18n="communityNotice">Independent community project · Not an official OpenAI product</span></footer>
+  <footer class="wrap"><div><strong>Codex Weekly Pet HUD</strong><p>基于 <a href="https://github.com/himomohi/codex-pet-hud">himomohi/codex-pet-hud</a> 改造，遵循 MIT 许可。</p><p>独立社区项目，非 OpenAI 官方产品。</p></div><div class="footer-links"><a href="https://github.com/chenfenghao/codex-weekly-pet-hud">GitHub ↗</a><a href="https://github.com/chenfenghao/codex-weekly-pet-hud/blob/main/README.md">使用说明 ↗</a><a href="https://github.com/chenfenghao/codex-weekly-pet-hud/blob/main/LICENSE">MIT License ↗</a></div></footer>
 </body>
 </html>

@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://himomohi.github.io/codex-pet-hud/
+
+Sitemap: https://chenfenghao.github.io/codex-weekly-pet-hud/sitemap.xml
