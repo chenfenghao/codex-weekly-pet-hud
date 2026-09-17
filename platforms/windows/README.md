@@ -10,7 +10,7 @@
 
 ```powershell
 dotnet build platforms/windows/CodexPetLimitRings.Windows/CodexPetLimitRings.Windows.csproj -c Release
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.1.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.2.0
 ```
 
 可传入 `-DotnetPath C:\path\to\dotnet.exe` 使用自定义 SDK 路径。打包产物在 `dist`。
@@ -62,3 +62,9 @@ v1.0.0 本机验证覆盖：1120 个布局案例、174 个节奏/粘贴/界面�
 Codex 的状态格式、窗口结构和用量接口可能变化。当前仅验证 Windows x64；其他平台源码保留自上游。系统托盘避让识别常见 Windows 10/11 托盘浮层、原生菜单和部分系统面板，其他第三方浮层依赖正常窗口顺序。
 
 日志在 `%LOCALAPPDATA%\CodexWeeklyPetHud\Logs\runtime.log`。勿提交个人配置、日志、`auth.json` 或 token。自定义 Codex 数据目录使用 `CODEX_HOME`。
+
+## 任务栏模式（v1.2.0）
+
+`displayMode` 为 `pet`（默认，兼容旧配置）或 `taskbar`；`taskbarOffset` 为任务栏内向左移动的 DIP 距离，独立于宠物偏移。`TaskbarHudHost` 创建属于本进程的 `HwndSource` 子窗口并挂到主任务栏，按父窗口 DPI 计算位置，不向 Explorer 注入代码、不缩小任务列表或修改系统设置。模式切换销毁旧的任务栏子窗口、隐藏宠物输入代理，并保留数据、刷新间隔和语言。
+
+在交互式 Windows 桌面运行 `CodexWeeklyPetHud.exe --taskbar-self-test <输出目录>`，检查真实父窗口、非置顶样式、点击命中、通知区域避让、位置调整、隐藏/重建、中英文渲染和设置切换。测试使用示例数据，不读取账户额度。当前原生检查在 Windows 10 通过；Windows 11、Explorer 重启和自动隐藏行为应在各目标桌面补充手工验证。主任务栏竖向布局或无法定位通知区域时仅保留托盘入口。

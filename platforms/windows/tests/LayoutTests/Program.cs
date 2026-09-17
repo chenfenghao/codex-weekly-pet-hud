@@ -3,6 +3,26 @@ using CodexPetLimitRings.Windows.Services;
 using System.Text.Json;
 
 const double epsilon = 0.001;
+// Taskbar positions stay out of Start and the notification area, at multiple DPIs.
+foreach (var dpi in new[] { 1d, 1.25, 1.5, 2, 3 })
+foreach (var offset in new[] { -1d, 0, 50, 400, 1600, double.NaN, double.PositiveInfinity })
+{
+    var width = (int)(1920 * dpi); var height = (int)(48 * dpi); var tray = (int)(1640 * dpi);
+    var placed = TaskbarLayout.Calculate(width, height, tray, dpi, offset) ?? throw new Exception("Taskbar layout missing");
+    if (placed.X < 64 * dpi || placed.X + placed.Width >= tray || placed.Y < 0 || placed.Y + placed.Height > height)
+        throw new Exception("Taskbar overlaps reserved boundaries");
+}
+if (TaskbarLayout.Calculate(48, 1080, 900, 1, 0) is not null ||
+    TaskbarLayout.Calculate(300, 48, 220, 1, 0) is not null ||
+    TaskbarLayout.Calculate(1920, 12, 1700, 1, 0) is not null)
+    throw new Exception("Unsupported taskbar should not create an overlay");
+var legacySettings = JsonSerializer.Deserialize<OverlaySettings>("{\"RefreshMinutes\":17}")!;
+legacySettings.Normalize();
+if (legacySettings.DisplayMode != "pet" || legacySettings.RefreshMinutes != 17) throw new Exception("Legacy settings changed mode");
+var taskbarSettings = new OverlaySettings { DisplayMode = "taskbar", TaskbarOffset = 125, Language = "en" };
+var taskbarRestored = JsonSerializer.Deserialize<OverlaySettings>(JsonSerializer.Serialize(taskbarSettings))!;
+taskbarRestored.Normalize();
+if (taskbarRestored.DisplayMode != "taskbar" || taskbarRestored.TaskbarOffset != 125 || taskbarRestored.Language != "en") throw new Exception("Taskbar settings not preserved");
 var settings = new OverlaySettings { Scale = 0.9575376884422109, PotionGap = 10, Alignment = "right" };
 var anchors = new List<PetAnchor>();
 

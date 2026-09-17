@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidatePattern('^v\d+\.\d+\.\d+$')][string]$Tag = 'v1.1.0',
+    [ValidatePattern('^v\d+\.\d+\.\d+$')][string]$Tag = 'v1.2.0',
     [string]$DotnetPath = 'dotnet'
 )
 $ErrorActionPreference = 'Stop'
@@ -24,7 +24,7 @@ foreach ($document in 'README.md','README.en.md','LICENSE','CHANGELOG.md') {
 $imageRoot = Join-Path $packageRoot 'docs/images'
 $platformDocs = Join-Path $packageRoot 'platforms/windows'
 New-Item -ItemType Directory -Path $imageRoot,$platformDocs -Force | Out-Null
-foreach ($name in 'capsule.png','radar-alert.png','capsule.en.png','radar-alert.en.png') {
+foreach ($name in 'capsule.png','radar-alert.png','capsule.en.png','radar-alert.en.png','taskbar.zh-CN.png','taskbar.en.png') {
     Copy-Item -LiteralPath (Join-Path $repoRoot "docs/images/$name") -Destination $imageRoot
 }
 Copy-Item -LiteralPath (Join-Path $repoRoot 'platforms/windows/README.md') -Destination $platformDocs

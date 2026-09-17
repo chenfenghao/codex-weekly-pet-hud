@@ -6,6 +6,14 @@
 
 A compact Windows status bar **above your Codex Pet**. Track your remaining weekly quota, see whether your usage is on pace, and receive community reset alerts.
 
+**New in v1.2.0: taskbar mode.** Choose **Settings → Display mode → Taskbar (Pet not required)** for an independent two-line display. Pet mode remains available.
+
+<img src="docs/images/taskbar.en.png" alt="Two-line taskbar quota display with sample data" width="285">
+
+The widget starts in free space left of the primary taskbar's notification area. Click for details, right-click for Settings; a gold dot marks reset radar attention. Use **Move left** to adjust its position independently of the Pet. Quota updates continue with Pet closed or the taskbar auto-hidden. Switch back to **Follow Codex Pet** anytime.
+
+Only the primary horizontal taskbar is supported; widget size follows taskbar height. The widget does not reserve space or push app icons aside. On crowded taskbars, move it to a free area or use Pet mode. Unsupported/vertical layouts hide the widget and retain the tray menu. Native taskbar tests were run on Windows 10; Windows 11 needs separate desktop validation.
+
 [Download Windows x64](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) · [Windows development guide](platforms/windows/README.en.md) · [Changelog](CHANGELOG.md) · [MIT License](LICENSE)
 
 <p>
@@ -31,19 +39,19 @@ A compact Windows status bar **above your Codex Pet**. Track your remaining week
 
 ## Download and run
 
-1. Download `Codex-Weekly-Pet-HUD-v1.1.0-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
+1. Download `Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
 2. **Extract the entire archive** to a permanent folder. Keep the DLL files beside the executable.
-3. Run `CodexWeeklyPetHud.exe`, then open Pet in Codex.
+3. Run `CodexWeeklyPetHud.exe`, then open Pet in Codex or select Taskbar mode from the tray Settings menu.
 4. Click the status bar, then **设置 (Settings)**. Under **语言 / Language**, choose **English**.
 
 The status bar, details, settings, tooltips, validation messages, tray menu and notification text switch immediately. The initial default is Simplified Chinese. Original community announcement text and text you paste are preserved as received.
 
-Requires Windows 10/11 x64 and a signed-in Codex desktop app with Pet support. The portable package includes the .NET 8 runtime; no separate .NET installation is needed. This release is unsigned, so Windows may show an unknown-publisher prompt. Verify the source and checksum before running it.
+Requires Windows 10/11 x64 and a signed-in Codex desktop app (Pet support is only needed for Pet mode). The portable package includes the .NET 8 runtime; no separate .NET installation is needed. This release is unsigned, so Windows may show an unknown-publisher prompt. Verify the source and checksum before running it.
 
 To upgrade, exit the previous version through its tray menu before extracting the new version. Settings are stored outside the application folder and survive replacement. To uninstall a portable copy, exit it and delete its extracted folder.
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.1.0-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip -Algorithm SHA256
 ```
 
 Compare the result with `SHA256SUMS.txt` from the same release.
@@ -103,7 +111,7 @@ Radar uses the public endpoints provided by [codex-reset.com](https://codex-rese
 - `https://codex-reset.com/api/forecast`
 - `https://codex-reset.com/api/feed`
 
-It shares the configurable refresh interval with quota polling, defaulting to five minutes. **Radar keeps checking while the app is running, even if the Pet is hidden.** Account quota polling pauses while the Pet is hidden. Exiting the app stops both.
+It shares the configurable refresh interval with quota polling, defaulting to five minutes. **Radar keeps checking while the app is running, even if the Pet is hidden.** Account quota polling pauses with a hidden Pet only in Pet mode; taskbar mode keeps polling. Exiting the app stops both.
 
 The first successful sync establishes a baseline without replaying old announcements. New signals appear in the third row and can trigger a Windows tray notification. Click a notification to open details and follow the source link. The same event state is not notified twice; a later transition from unverified to confirmed may generate another alert. Ordinary posts, weak hints and model-probability changes alone do not trigger alerts.
 
@@ -132,7 +140,7 @@ Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and 
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.1.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.2.0
 ```
 
 The portable ZIP and SHA-256 file are written to `dist`. Packaging reads only build output and project documentation, not your user data directory. To publish the executable directly:

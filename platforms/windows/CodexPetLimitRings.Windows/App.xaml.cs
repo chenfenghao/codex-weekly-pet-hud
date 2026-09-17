@@ -11,6 +11,13 @@ public partial class App : System.Windows.Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        var taskbarTest = Array.IndexOf(e.Args, "--taskbar-self-test");
+        if (taskbarTest >= 0 && taskbarTest + 1 < e.Args.Length)
+        {
+            var directory = Path.GetFullPath(e.Args[taskbarTest + 1]);
+            Dispatcher.BeginInvoke(async () => Shutdown(await TaskbarSelfTest.RunAsync(directory)));
+            return;
+        }
         var languageTest = Array.IndexOf(e.Args, "--language-self-test");
         if (languageTest >= 0 && languageTest + 1 < e.Args.Length)
         {

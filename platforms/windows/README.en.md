@@ -4,13 +4,17 @@
 
 This fork is a .NET 8 / WPF tray application with a weekly quota HUD above the real Codex Pet. See the [main README](../../README.en.md) for usage instructions.
 
+v1.2.0 also supports an independent taskbar mode. `displayMode` is `pet` (backward-compatible default) or `taskbar`; `taskbarOffset` is a separate leftward DIP offset. `TaskbarHudHost` owns a child HWND inside the primary horizontal taskbar, matching its DPI context without injecting into Explorer or resizing the app-button area. Unsupported layouts retain the tray entry. Windows 10 native placement was tested; Windows 11, Explorer restart and auto-hide need additional validation on target desktops.
+
+Run `CodexWeeklyPetHud.exe --taskbar-self-test <output-directory>` on an interactive desktop to check real taskbar parenting, non-topmost style, native hit tests, notification-area bounds, hide/recreate, bilingual rendering and settings switching. The test uses sample data without reading account quota.
+
 ## Building and source installation
 
 Requires the .NET 8 SDK, Windows x64 and PowerShell. Run these commands from the repository root:
 
 ```powershell
 dotnet build platforms/windows/CodexPetLimitRings.Windows/CodexPetLimitRings.Windows.csproj -c Release
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.1.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.2.0
 ```
 
 Use `-DotnetPath C:\path\to\dotnet.exe` to select a custom SDK. Packages are written to `dist` and include Chinese and English documentation.

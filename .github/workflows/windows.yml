@@ -24,7 +24,7 @@ jobs:
         run: dotnet run --project platforms/windows/tests/LayoutTests/LayoutTests.csproj -c Release
       - name: Package Windows x64
         shell: pwsh
-        run: ./scripts/release/package-weekly.ps1 -Tag v1.1.0
+        run: ./scripts/release/package-weekly.ps1 -Tag v1.2.0
       - name: Reset signal policy tests
         shell: pwsh
         run: |

@@ -23,6 +23,8 @@ public sealed class MainController : IDisposable
     private readonly PotionWindow _secondaryPotion = new("周", System.Windows.Media.Color.FromRgb(6, 18, 61), System.Windows.Media.Color.FromRgb(10, 82, 194), System.Windows.Media.Color.FromRgb(20, 199, 235), System.Windows.Media.Color.FromRgb(46, 224, 255));
     private readonly PetInputProxyWindow _petInputProxy = new();
     private readonly UnifiedDragController _unifiedDrag = new();
+    private readonly TaskbarHudHost _taskbarHud = new();
+    private string _activeDisplayMode = "pet";
     private readonly UsageDetailsWindow _details = new();
     private readonly SettingsWindow _settingsWindow = new();
     private readonly Forms.NotifyIcon _tray = new();
@@ -37,7 +39,7 @@ public sealed class MainController : IDisposable
     private string? _verificationCapturePath;
     private bool _refreshing;
     private long _usageRevision;
-    private bool _petVisible;
+    private bool _hudActive;
     private bool _yieldingToShell;
     private long _visibilityGeneration;
     private DragPreview? _dragPreview;
@@ -56,6 +58,8 @@ public sealed class MainController : IDisposable
         _verificationCapturePath = verificationCapturePath;
         AppLog.Write($"HUD state source: {_stateReader.StatePath}");
         ConfigureTray();
+        _taskbarHud.View.Clicked += () => { if (_details.IsVisible) _details.Hide(); else ShowDetails(_secondaryPotion); };
+        _taskbarHud.View.SettingsRequested += ShowSettings;
         _details.ApplyLanguage();
         _secondaryPotion.PotionClicked += () => { if (_details.IsVisible) _details.Hide(); else ShowDetails(_secondaryPotion); };
         _petInputProxy.PointerPressed += point => BeginUnifiedInteraction(UnifiedDragSurface.Pet, point);
@@ -89,8 +93,23 @@ public sealed class MainController : IDisposable
     {
         try
         {
+            if (_activeDisplayMode != _settings.DisplayMode)
+            {
+                HideHud();
+                _taskbarHud.Detach();
+                _activeDisplayMode = _settings.DisplayMode;
+                _lastUsageAttempt = DateTimeOffset.MinValue;
+            }
             if (_settings.ResetRadarEnabled && DateTimeOffset.Now - _lastSignalAttempt >= _settings.RefreshInterval)
                 _ = RefreshResetSignalsAsync(false);
+            // Independent mode keeps polling even with Pet closed or Explorer unavailable.
+            if (_settings.DisplayMode == "taskbar")
+            {
+                _hudActive = true;
+                MarkUsageStaleIfNeeded();
+                if (_usage.Source != "manual" && DateTimeOffset.Now - _lastUsageAttempt >= _settings.RefreshInterval)
+                    _ = RefreshUsageAsync(force: false);
+            }
             UpdateResetSignalDisplay();
             if (_details.IsVisible) _details.Update(_usage, _refreshing);
             // Never let the invisible drag proxy cover the notification area or system menus.
@@ -104,6 +123,7 @@ public sealed class MainController : IDisposable
                     _dragPreview = null;
                     _petInputProxy.Hide();
                     _secondaryPotion.Hide();
+                    _taskbarHud.Hide();
                     AppLog.Write("HUD yielded to system flyout; drag proxy hidden.");
                 }
                 return;
@@ -114,6 +134,15 @@ public sealed class MainController : IDisposable
                 AppLog.Write("System flyout closed; HUD may resume.");
             }
             if (_unifiedDrag.IsDragging) return;
+            if (_settings.DisplayMode == "taskbar")
+            {
+                _petInputProxy.Hide();
+                _secondaryPotion.Hide();
+                _anchor = null;
+                _taskbarHud.Place(_settings.TaskbarOffset);
+                UpdateTrayText();
+                return;
+            }
             var candidate = _stateReader.ReadVisibleCandidate();
             var anchor = NativeMethods.FindVisiblePetAnchor(candidate, out var anchorDiagnostic);
             if (_dragPreview is not null)
@@ -156,14 +185,14 @@ public sealed class MainController : IDisposable
                 return;
             }
 
-            var justShown = !_petVisible;
+            var justShown = !_hudActive;
             if (justShown)
             {
                 AppLog.Write(
                     $"Pet anchor acquired: x={anchor.X:0.##}, y={anchor.Y:0.##}, " +
                     $"size={anchor.Width:0.##}x{anchor.Height:0.##}.");
             }
-            _petVisible = true;
+            _hudActive = true;
             _anchor = anchor;
             PlacePotions(anchor);
             PlacePetInputProxy(anchor);
@@ -192,18 +221,19 @@ public sealed class MainController : IDisposable
 
     private void HideHud()
     {
-        if (_petVisible)
+        if (_hudActive)
         {
             AppLog.Write("Pet anchor lost; potion HUD hidden.");
             _visibilityGeneration++;
             _usageCancellation?.Cancel();
         }
-        _petVisible = false;
+        _hudActive = false;
         _unifiedDrag.Cancel();
         _dragPreview = null;
         _anchor = null;
         _petInputProxy.Hide();
         _secondaryPotion.Hide();
+        _taskbarHud.Hide();
         UpdateTrayText();
     }
 
@@ -230,7 +260,7 @@ public sealed class MainController : IDisposable
 
     private void BeginUnifiedInteraction(UnifiedDragSurface surface, ScreenPointer pointer)
     {
-        if (_yieldingToShell || !_petVisible ||
+        if (_yieldingToShell || !_hudActive ||
             _anchor is null ||
             !NativeMethods.TryGetPhysicalWindowRect(_petInputProxy, out var petBounds))
         {
@@ -297,7 +327,7 @@ public sealed class MainController : IDisposable
 
     private void ForwardPetHover()
     {
-        if (!_petVisible || _anchor is null || _unifiedDrag.IsPressed) return;
+        if (!_hudActive || _anchor is null || _unifiedDrag.IsPressed) return;
         NativeMethods.ForwardPetHover(_anchor.NativeWindowHandle);
     }
 
@@ -311,7 +341,7 @@ public sealed class MainController : IDisposable
 
     private async Task RefreshUsageAsync(bool force)
     {
-        if (_refreshing || (!force && (!_petVisible || _usage.Source == "manual"))) return;
+        if (_refreshing || (!force && (!_hudActive || _usage.Source == "manual"))) return;
         if (!force && DateTimeOffset.Now - _lastUsageAttempt < _settings.RefreshInterval) return;
         var generation = _visibilityGeneration;
         var revision = _usageRevision;
@@ -323,7 +353,7 @@ public sealed class MainController : IDisposable
         try
         {
             var refreshed = await _usageService.RefreshAsync(cancellation.Token);
-            if (refreshed is not null && revision == _usageRevision && (force || (_petVisible && generation == _visibilityGeneration)))
+            if (refreshed is not null && revision == _usageRevision && (force || (_hudActive && generation == _visibilityGeneration)))
             {
                 _usage = refreshed;
                 _settings.AutoReadUsage = true; _store.SaveSettings(_settings); _store.SaveLatestUsage(refreshed);
@@ -416,6 +446,7 @@ public sealed class MainController : IDisposable
         if (latest is not null) details += $"\n{latest.Title} · {latest.At.LocalDateTime:M/d HH:mm}\n{latest.Summary}";
         if (stale) details += UiText.T("\n连接或数据延迟，保留上次记录，暂停新信号提醒。");
         _secondaryPotion.UpdateResetSignal(headline, details, attention);
+        _taskbarHud.View.Update(_usage, headline, details, attention);
         _details.UpdateResetSignal(headline, details, attention, _signalsRefreshing);
     }
 
@@ -427,6 +458,7 @@ public sealed class MainController : IDisposable
         {
             _details.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
             if (!_details.IsVisible) _details.Show();
+            if (_settings.DisplayMode == "taskbar") _taskbarHud.PositionDetails(_details);
             _details.Activate(); return;
         }
         PositionDetails(source, _details.MinHeight);
@@ -468,7 +500,8 @@ public sealed class MainController : IDisposable
                 if (item.Tag is string key) item.Text = UiText.T(key);
         UpdateTrayText();
         UpdateResetSignalDisplay();
-        if (_anchor is not null)
+        Tick();
+        if (_settings.DisplayMode == "pet" && _anchor is not null)
         {
             PlacePotions(_anchor);
             if (_details.IsVisible) PositionDetails(_secondaryPotion, _details.ActualHeight);
@@ -491,6 +524,7 @@ public sealed class MainController : IDisposable
         AddItem("挂件设置（更新间隔 / 外观）…", (_, _) => ShowSettings());
         AddItem("重置挂件位置", (_, _) => {
             _settings.HorizontalOffset = 0; _settings.VerticalOffset = 0;
+            _settings.TaskbarOffset = 0;
             ApplySettings(_settings);
         });
         menu.Items.Add(new Forms.ToolStripSeparator());
@@ -500,7 +534,12 @@ public sealed class MainController : IDisposable
 
     private void UpdateTrayText()
     {
-        if (!_petVisible) { _tray.Text = UiText.T("Codex 周额度 · 请打开 Codex 宠物"); return; }
+        if (_settings.DisplayMode == "taskbar" && !_taskbarHud.IsVisible)
+        {
+            _tray.Text = UiText.T(_taskbarHud.Status);
+            return;
+        }
+        if (!_hudActive) { _tray.Text = UiText.T("Codex 周额度 · 请打开 Codex 宠物"); return; }
         var weekly = _usage.SecondaryRemaining is null ? "--" : $"{_usage.SecondaryRemaining:0}%";
         var state = _usage.Source == "stale" ? UiText.T(" · 更新延迟") : string.Empty;
         _tray.Text = UiText.F("Codex 周额度 · 剩余 {0}{1}", weekly, state);
@@ -516,7 +555,7 @@ public sealed class MainController : IDisposable
         await Task.Delay(750);
         try
         {
-            if (!_petVisible || _anchor is null)
+            if (!_hudActive || _anchor is null)
             {
                 AppLog.Write("Verification capture skipped: pet anchor is no longer visible.");
                 return;
@@ -566,9 +605,10 @@ public sealed class MainController : IDisposable
         _lifetime.Cancel();
         _resetSignalService.Dispose();
         _timer.Stop();
-        _petVisible = false;
+        _hudActive = false;
         _usageCancellation?.Cancel();
         _unifiedDrag.Dispose();
+        _taskbarHud.Dispose();
         _tray.Visible = false;
         _tray.Dispose();
         _trayIcon?.Dispose();

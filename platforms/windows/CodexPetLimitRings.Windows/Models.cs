@@ -5,6 +5,8 @@ namespace CodexPetLimitRings.Windows;
 public sealed class OverlaySettings
 {
     public string Language { get; set; } = "zh-CN";
+    public string DisplayMode { get; set; } = "pet";
+    public double TaskbarOffset { get; set; }
     public double Scale { get; set; } = 1;
     public double HorizontalOffset { get; set; }
     public double VerticalOffset { get; set; }
@@ -26,6 +28,8 @@ public sealed class OverlaySettings
     public void Normalize()
     {
         Language = Language?.Trim().ToLowerInvariant() is "en" or "en-us" or "en-gb" ? "en" : "zh-CN";
+        DisplayMode = DisplayMode == "taskbar" ? "taskbar" : "pet";
+        TaskbarOffset = double.IsFinite(TaskbarOffset) ? Math.Clamp(TaskbarOffset, 0, 1600) : 0;
         RefreshMinutes = Math.Clamp(RefreshMinutes, 1, 60);
         if (!double.IsFinite(Scale)) Scale = 0.65;
         if (!double.IsFinite(HorizontalOffset)) HorizontalOffset = 0;

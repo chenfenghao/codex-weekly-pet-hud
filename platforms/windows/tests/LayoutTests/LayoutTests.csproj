@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\CodexPetLimitRings.Windows\Models.cs" Link="Models.cs" />
+    <Compile Include="..\..\CodexPetLimitRings.Windows\TaskbarLayout.cs" Link="TaskbarLayout.cs" />
     <Compile Include="..\..\CodexPetLimitRings.Windows\HudLayout.cs" Link="HudLayout.cs" />
     <Compile Include="..\..\CodexPetLimitRings.Windows\PetInputProxyLayout.cs" Link="PetInputProxyLayout.cs" />
     <Compile Include="..\..\CodexPetLimitRings.Windows\UnifiedDragPolicy.cs" Link="UnifiedDragPolicy.cs" />

@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>CodexWeeklyPetHud</AssemblyName>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Product>Codex 周额度宠物挂件</Product>
     <RootNamespace>CodexPetLimitRings.Windows</RootNamespace>
     <ApplicationIcon>..\..\..\assets\windows\tray-icon-emoji.ico</ApplicationIcon>

@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0] - 2026-09-17 · Taskbar mode / 任务栏模式
+
+- Add Settings → Display mode → Taskbar, independent of Pet visibility. Existing installs keep Pet mode until switched.
+- Show remaining quota, usage pace, target remaining and daily budget in two compact lines inside the primary horizontal taskbar. Click for details, right-click for Settings; a gold dot marks reset radar attention.
+- Persist a separate taskbar position offset. Keep automatic quota and radar polling active with Pet closed or the taskbar hidden.
+- Use an app-owned child window without modifying Explorer, reserving taskbar space or repeatedly raising a topmost overlay. Keep notification-area bounds clear and hide during supported system flyouts.
+- Recover the child window after detach/Explorer window replacement; retain the tray menu when taskbar geometry is unsupported. Vertical taskbars are not supported; crowded taskbars need manual positioning or Pet mode.
+- Add bilingual UI, backward-compatible settings checks, DPI/boundary layout cases and native taskbar hit-test/lifecycle checks. Native taskbar checks were run on Windows 10; Windows 11 still requires separate desktop validation.
+
 ## [1.1.0] - 2026-09-14 · Chinese / English
 
 - Add instant Chinese/English switching under Settings → Language, with a saved preference and Chinese fallback for existing settings.

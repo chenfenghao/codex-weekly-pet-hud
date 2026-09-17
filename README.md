@@ -6,6 +6,14 @@
 
 放在 **Codex Pet 上方**的轻量 Windows 状态条：看剩余额度、判断使用快慢，并接收社区重置信号提醒。
 
+**v1.2.0 新增任务栏模式**：在「设置 → 显示模式」选择「任务栏（无需打开宠物）」，即可独立显示剩余额度和使用节奏。原来的宠物模式仍保留。
+
+<img src="docs/images/taskbar.zh-CN.png" alt="任务栏两行额度显示，示例数据" width="285">
+
+任务栏模式默认在主屏幕通知区域左侧空白处显示两行文字，点击查看详情、右键打开设置，重置雷达有新信号时圆点变金色。可用「向左移动」调整位置，独立保存且不改变宠物位置；关闭 Pet 或自动隐藏任务栏后仍按设定间隔读取额度。可随时切回「跟随 Codex 宠物」。
+
+目前支持主屏幕的横向任务栏，大小随任务栏高度调整。它不会为自己挤开应用图标；任务栏拥挤时请调整到空白处或切回宠物模式。竖向或不兼容任务栏会隐藏状态条，托盘菜单仍可打开设置。本次原生任务栏验证在 Windows 10 完成，Windows 11 尚待单独验证。
+
 [下载 Windows x64 便携版](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) · [使用与构建](platforms/windows/README.md) · [更新记录](CHANGELOG.md) · [MIT 许可证](LICENSE)
 
 <p>
@@ -31,9 +39,9 @@
 
 ## 下载与启动
 
-1. 在 [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) 下载 `Codex-Weekly-Pet-HUD-v1.1.0-Windows-x64.zip`。
+1. 在 [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) 下载 `Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip`。
 2. **完整解压**到固定目录，保留 EXE 旁边的 DLL 文件。
-3. 双击 `CodexWeeklyPetHud.exe`，然后在 Codex 中打开 Pet。
+3. 双击 `CodexWeeklyPetHud.exe`。可以打开 Codex Pet，或从系统托盘进入设置切换任务栏模式。
 4. 单击状态条查看详情，点「设置」调整间隔、位置、大小和提醒；系统托盘菜单也能进入设置或退出。
 5. 在「设置 → 语言 / Language」选择 **English** 或 **简体中文**，状态条、详情、设置、提示、托盘菜单和通知会即时切换，重启后保留选择。
 
@@ -44,7 +52,7 @@
 升级时先通过托盘退出旧版，再解压新版；设置保存在用户数据目录，不因替换程序文件丢失。卸载便携版时退出并删除解压目录即可。
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.1.0-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip -Algorithm SHA256
 ```
 
 将结果与同一 Release 的 `SHA256SUMS.txt` 对照。
@@ -102,7 +110,7 @@ Get-FileHash .\Codex-Weekly-Pet-HUD-v1.1.0-Windows-x64.zip -Algorithm SHA256
 - `https://codex-reset.com/api/forecast`
 - `https://codex-reset.com/api/feed`
 
-雷达与额度读取共用可调间隔，默认 5 分钟。**只要挂件进程在运行，Pet 隐藏后仍继续检查雷达**；Pet 隐藏时暂停账户用量读取。退出程序后两者均停止。
+雷达与额度读取共用可调间隔，默认 5 分钟。**只要挂件进程在运行，Pet 隐藏后仍继续检查雷达**；仅宠物模式在 Pet 隐藏时暂停账户用量读取，任务栏模式持续读取。退出程序后两者均停止。
 
 首次成功读取只建立历史基线，不补发旧公告。新信号显示在第三行，并可触发 Windows 系统托盘通知。点击通知打开详情，可继续查看来源。同一事件的同一状态不重复通知，待核实升级为已确认时可再次提醒。普通动态、弱暗示及纯模型概率变化不会触发提醒。
 
@@ -131,7 +139,7 @@ Get-FileHash .\Codex-Weekly-Pet-HUD-v1.1.0-Windows-x64.zip -Algorithm SHA256
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.1.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.2.0
 ```
 
 产物在 `dist`，包含便携 ZIP 与 SHA-256 校验文件。打包脚本只读取构建输出和项目文档，不读取用户数据目录。也可直接构建：

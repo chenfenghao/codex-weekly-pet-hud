@@ -19,6 +19,21 @@
       </DockPanel>
       <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
         <StackPanel>
+          <TextBlock Text="{local:Tr '显示模式'}" FontSize="15" FontWeight="SemiBold"/>
+          <ComboBox x:Name="DisplayModeChoice" Margin="0,8,0,8" SelectionChanged="Control_OnChanged">
+            <ComboBoxItem Tag="pet" Content="{local:Tr '跟随 Codex 宠物'}"/>
+            <ComboBoxItem Tag="taskbar" Content="{local:Tr '任务栏（无需打开宠物）'}"/>
+          </ComboBox>
+          <StackPanel x:Name="TaskbarOptions">
+            <TextBlock Text="{local:Tr '在主屏幕任务栏空白处显示两行额度。单击查看详情，右键打开设置。'}" Foreground="#71717A" TextWrapping="Wrap"/>
+            <DockPanel Margin="0,12,0,0"><TextBlock Text="{local:Tr '向左移动（避开应用图标）'}"/><TextBlock x:Name="TaskbarOffsetValue" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
+            <Slider x:Name="TaskbarOffset" Minimum="0" Maximum="1600" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="Control_OnChanged"/>
+            <TextBlock Text="{local:Tr '默认在通知区域左侧；不会挤开任务栏图标。如有重叠，请调整位置或切回宠物模式。'}" Foreground="#71717A" TextWrapping="Wrap" Margin="0,6,0,0"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
+        <StackPanel>
           <TextBlock Text="{local:Tr '自动更新'}" FontSize="15" FontWeight="SemiBold"/>
           <DockPanel Margin="0,10,0,5"><TextBlock Text="{local:Tr '读取额度的间隔'}"/><TextBlock x:Name="RefreshMinutesValue" HorizontalAlignment="Right" FontWeight="SemiBold"/></DockPanel>
           <Slider x:Name="RefreshMinutes" Minimum="1" Maximum="60" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Control_OnChanged"/>

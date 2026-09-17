@@ -18,6 +18,8 @@ public partial class SettingsWindow : Window
         _settings = settings;
         UiText.SetLanguage(settings.Language);
         LanguageChoice.SelectedItem = LanguageChoice.Items.Cast<ComboBoxItem>().First(item => item.Tag?.ToString() == settings.Language);
+        DisplayModeChoice.SelectedItem = DisplayModeChoice.Items.Cast<ComboBoxItem>().First(item => item.Tag?.ToString() == settings.DisplayMode);
+        TaskbarOffset.Value = settings.TaskbarOffset;
         RefreshMinutes.Value = settings.RefreshMinutes;
         ResetRadarEnabled.IsChecked = settings.ResetRadarEnabled;
         ResetNotificationsEnabled.IsChecked = settings.ResetNotificationsEnabled;
@@ -36,6 +38,8 @@ public partial class SettingsWindow : Window
     {
         if (_applying || !IsLoaded) return;
         _settings.Language = (LanguageChoice.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "zh-CN";
+        _settings.DisplayMode = (DisplayModeChoice.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "pet";
+        _settings.TaskbarOffset = TaskbarOffset.Value;
         UiText.SetLanguage(_settings.Language);
         _settings.RefreshMinutes = (int)Math.Round(RefreshMinutes.Value);
         _settings.ResetRadarEnabled = ResetRadarEnabled.IsChecked == true;
@@ -70,6 +74,10 @@ public partial class SettingsWindow : Window
 
     private void UpdateValueLabels()
     {
+        var taskbar = _settings.DisplayMode == "taskbar";
+        TaskbarOptions.Visibility = taskbar ? Visibility.Visible : Visibility.Collapsed;
+        Alignment.IsEnabled = HorizontalOffset.IsEnabled = VerticalOffset.IsEnabled = Scale.IsEnabled = PotionGap.IsEnabled = !taskbar;
+        TaskbarOffsetValue.Text = $"{TaskbarOffset.Value:0}px";
         RefreshMinutesValue.Text = UiText.F("每 {0:0} 分钟", RefreshMinutes.Value);
         ScaleValue.Text = $"{Scale.Value * 100:0}%";
         HorizontalOffsetValue.Text = $"{HorizontalOffset.Value:+0;-0;0}px";

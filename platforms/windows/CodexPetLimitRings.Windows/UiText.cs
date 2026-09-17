@@ -25,6 +25,18 @@ public sealed class UiText : INotifyPropertyChanged
     internal static IReadOnlyDictionary<string, string> Translations => English;
     private static readonly Dictionary<string, string> English = new()
     {
+        ["显示模式"] = "Display mode",
+        ["跟随 Codex 宠物"] = "Follow Codex Pet",
+        ["任务栏（无需打开宠物）"] = "Taskbar (Pet not required)",
+        ["在主屏幕任务栏空白处显示两行额度。单击查看详情，右键打开设置。"] = "Two quota lines in free space on the primary taskbar. Click for details; right-click for Settings.",
+        ["向左移动（避开应用图标）"] = "Move left (avoid app icons)",
+        ["默认在通知区域左侧；不会挤开任务栏图标。如有重叠，请调整位置或切回宠物模式。"] = "Starts left of the notification area; does not push app icons aside. If they overlap, adjust the position or switch to Pet mode.",
+        ["任务栏正在连接"] = "Connecting to taskbar",
+        ["任务栏布局暂不支持，请使用宠物模式"] = "Unsupported taskbar; use Pet mode",
+        ["任务栏空间不足，请使用宠物模式"] = "Taskbar too small; use Pet mode",
+        ["任务栏显示"] = "Taskbar display",
+        ["单击查看详情，右键打开设置。"] = "Click for details; right-click for Settings.",
+        ["剩余 {0:0}%"] = "Left {0:0}%",
         ["周额度 · 挂件设置"] = "Weekly quota · Settings",
         ["恢复默认"] = "Reset defaults",
         ["Codex 周额度"] = "Codex weekly quota",
