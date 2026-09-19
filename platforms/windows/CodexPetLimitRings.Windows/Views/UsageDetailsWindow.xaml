@@ -11,6 +11,11 @@
   <DockPanel><Button Content="{local:Tr '设置'}" DockPanel.Dock="Right" Click="Settings_OnClick" Background="#293A30" Foreground="#BDD2C4" Padding="8,3"/><TextBlock Text="{local:Tr '本周节奏'}" Foreground="#A4AFA8" FontSize="12"/><TextBlock x:Name="StatusText" HorizontalAlignment="Right" FontSize="12" Margin="0,0,12,0"/></DockPanel>
   <TextBlock x:Name="RemainingText" Text="—%" FontSize="44" Margin="0,17,0,0"/>
   <TextBlock Text="{local:Tr '剩余可用额度'}" Foreground="#939E98" FontSize="11" Margin="0,0,0,18"/>
+  <Grid Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+    <StackPanel><TextBlock Text="{local:Tr '匀速应剩（此刻）'}" FontSize="11" Foreground="#AFC3B7"/><TextBlock x:Name="EvenTargetText" FontSize="23" Margin="0,4,0,0"/></StackPanel>
+    <StackPanel Grid.Column="1"><TextBlock x:Name="CloseTargetLabel" Text="{local:Tr '下班应剩'}" FontSize="11" Foreground="#AFC3B7"/><TextBlock x:Name="CloseTargetText" FontSize="23" Margin="0,4,0,0"/></StackPanel>
+  </Grid>
+  <TextBlock x:Name="WorkDeadlineText" Foreground="#939E98" FontSize="10" TextWrapping="Wrap" Margin="0,0,0,16"/>
   <DockPanel><TextBlock Text="{local:Tr '额度已用'}" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="UsedText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>
   <ProgressBar x:Name="UsedBar" Height="5" Maximum="100" Margin="0,8,0,15" Background="#2B352E" Foreground="#9BDFB5" BorderThickness="0"/>
   <DockPanel><TextBlock x:Name="TimeLabel" Text="{local:Tr '时间已过'}" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="TimeText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>

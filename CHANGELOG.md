@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - 2026-09-19 · Even-use and shift-end targets
+
+- Show both targets together in Pet and taskbar modes: Even is the ideal balance now over seven calendar days; Close is the planned balance at today's shift end, weighted by working hours.
+- Keep both benchmarks independent of actual spending. Retain daily/today's adaptive budgets in details and preserve the existing pace mode and schedule on upgrade.
+- Keep schedule controls available in both pace modes. Handle days off, overnight shifts, excluded breaks, reset-before-close and invalid or expired reset times.
+- Add Chinese/English labels, target explanations, refreshed example screenshots and calculation/UI regression checks.
+
 ## [1.3.0] - 2026-09-19 · Working-hours pacing / 工作时段算法
 
 - Add optional working weekdays, start/end times and a daily break, with local-time handling and overnight shifts. Existing configurations retain all-day pacing.

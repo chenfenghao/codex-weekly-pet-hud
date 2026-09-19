@@ -25,6 +25,18 @@ public sealed class UiText : INotifyPropertyChanged
     internal static IReadOnlyDictionary<string, string> Translations => English;
     private static readonly Dictionary<string, string> English = new()
     {
+        ["匀速 {0} · 下班 {1}"] = "Even {0} · Close {1}",
+        ["匀速 {0} · 休息 {1}"] = "Even {0} · Off {1}",
+        ["匀速应剩（此刻）"] = "Even target (now)",
+        ["下班应剩"] = "At shift end",
+        ["休息日应剩"] = "Day-off target",
+        ["工作目标截止：{0}"] = "Work target deadline: {0}",
+        ["设置有效作息和重置时间后显示下班目标。"] = "Set valid work hours and a reset time to see the closing target.",
+        ["本周期在下班前重置，工作目标截止于重置时刻。"] = "This cycle resets before shift end; the work target stops at reset.",
+        ["匀速：按自然时间计算此刻应剩；下班：按工作时段计算下班时应留。目标不随实际消耗改变。"] = "Even: quota expected now by elapsed calendar time. Close: quota to retain at shift end by work hours. Spending does not change either target.",
+        ["速率与预算按工作时段计算"] = "Use working hours for pace and budget",
+        ["始终同时显示匀速与下班两个目标。上方选项仅切换速率和预算算法；工作日与时间决定下班目标。"] = "Both targets are always shown. The option above only changes pace and budget; working days and times determine the closing target.",
+        ["匀速应剩＝剩余自然时间÷7天；下班应剩＝下班后剩余工作时长÷本周期全部工作时长。两者都是计划参考值，不随实际余额改变。"] = "Even target = calendar time left / 7 days. Closing target = work hours after shift end / all cycle work hours. Both are plan benchmarks, independent of actual quota left.",
         ["额度节奏算法"] = "Quota pacing",
         ["按工作时段计算（关闭则按全天）"] = "Use working hours (off: all day)",
         ["周一"] = "Mon", ["周二"] = "Tue", ["周三"] = "Wed", ["周四"] = "Thu", ["周五"] = "Fri", ["周六"] = "Sat", ["周日"] = "Sun",

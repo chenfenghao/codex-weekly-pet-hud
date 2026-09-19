@@ -97,7 +97,7 @@ internal static class LanguageSelfTest
             capsule.PacingSettings = details.PacingSettings = workSettings;
             capsule.UpdateUsage(usage.SecondaryRemaining, usage.SecondaryReset, usage.Source);
             details.Update(usage, false);
-            Check(((TextBlock)capsule.FindName("IdealText")).Text.Contains("Today"), "Capsule identifies today's budget");
+            Check(((TextBlock)capsule.FindName("IdealText")).Text.Contains("Even") && (((TextBlock)capsule.FindName("IdealText")).Text.Contains("Close") || ((TextBlock)capsule.FindName("IdealText")).Text.Contains("Off")), "Capsule shows both targets");
             Check(((TextBlock)details.FindName("BudgetLabel")).Text == "Budget left today", "Details identifies today's budget");
             Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "work-capsule.en.png"));
             settings.Height = 900;

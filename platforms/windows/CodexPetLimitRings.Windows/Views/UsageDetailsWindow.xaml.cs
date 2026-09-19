@@ -6,7 +6,7 @@ namespace CodexPetLimitRings.Windows.Views;
 
 public partial class UsageDetailsWindow : Window
 {
-    public OverlaySettings? PacingSettings { get; set; }
+    public OverlaySettings? PacingSettings { get; set; } = new();
     private bool _allowClose;
     private string? _lastLanguage;
     public event Action? RefreshRequested;
@@ -28,6 +28,15 @@ public partial class UsageDetailsWindow : Window
     public void Update(UsageSnapshot usage, bool refreshing)
     {
         var pace = WeeklyPacing.Calculate(usage.SecondaryRemaining, usage.SecondaryReset, DateTimeOffset.Now, PacingSettings);
+        var targets = WeeklyTargets.Calculate(usage.SecondaryReset, DateTimeOffset.Now, PacingSettings);
+        var fresh = usage.Source is "live" or "manual";
+        EvenTargetText.Text = QuotaTargets.Percent(fresh ? targets.EvenRemaining : null);
+        CloseTargetText.Text = QuotaTargets.Percent(fresh ? targets.CloseRemaining : null);
+        CloseTargetLabel.Text = UiText.T(targets.DayOff ? "休息日应剩" : "下班应剩");
+        WorkDeadlineText.Text = targets.Deadline is { } deadline
+            ? UiText.F("工作目标截止：{0}", UiText.Date(deadline.LocalDateTime))
+            : UiText.T("设置有效作息和重置时间后显示下班目标。");
+        if (targets.ResetBeforeClose) WorkDeadlineText.Text += "\n" + UiText.T("本周期在下班前重置，工作目标截止于重置时刻。");
         var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(pace.Color)!;
         RemainingText.Text = usage.SecondaryRemaining is { } remaining ? $"{remaining:0.#}%" : "—%";
         StatusText.Text = UiText.T(pace.Status); StatusText.Foreground = brush; UsedBar.Foreground = brush;
@@ -38,7 +47,7 @@ public partial class UsageDetailsWindow : Window
         TimeLabel.Text = UiText.T(work ? "计划工作时间已过" : "时间已过");
         BudgetLabel.Text = UiText.T(work ? "今日剩余可用" : "后续每日上限");
         BudgetText.Text = pace.DailyBudget is { } budget ? UiText.F(work ? "≤ {0:0.#}% 今日" : "≤ {0:0.#}% /天", Math.Floor(budget * 10) / 10) : "—";
-        PacingExplanation.Text = UiText.T(work ? "按本机时区和工作时段计算应剩，下班与休息日暂停推进。今日建议仅包含今天午夜前剩余工作时段；临时加班消耗仍会计入。修改作息会重新计算整个周期。" : "应剩＝100%−本周时间进度；建议每日上限＝剩余额度按剩余天数均摊。点击上方「设置」调整自动读取间隔，默认 5 分钟；手动粘贴后暂停自动覆盖。");
+        PacingExplanation.Text = UiText.T("匀速应剩＝剩余自然时间÷7天；下班应剩＝下班后剩余工作时长÷本周期全部工作时长。两者都是计划参考值，不随实际余额改变。");
         PredictionText.Text = pace.Prediction; PredictionText.Foreground = brush;
         CountdownText.Text = UiText.T("距离重置  ") + WeeklyPacing.Countdown(usage.SecondaryReset, DateTimeOffset.Now);
         try { ResetText.Text = usage.SecondaryReset is { } reset ? DateTimeOffset.FromUnixTimeSeconds(reset).LocalDateTime.ToString(UiText.IsEnglish ? "yyyy MMM d, ddd HH:mm" : "yyyy年M月d日 ddd HH:mm", UiText.Culture) : UiText.T("本机时区"); }

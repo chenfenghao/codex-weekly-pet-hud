@@ -95,10 +95,10 @@ public partial class SettingsWindow : Window
     private void UpdateValueLabels()
     {
         var taskbar = _settings.DisplayMode == "taskbar";
-        WorkHoursOptions.Visibility = _settings.WorkHoursEnabled ? Visibility.Visible : Visibility.Collapsed;
+        WorkHoursOptions.Visibility = Visibility.Visible;
         WorkBreakStart.IsEnabled = WorkBreakEnd.IsEnabled = _settings.WorkBreakEnabled;
         var invalid = _settings.WorkDays.Length == 0 || _settings.WorkStartMinute == _settings.WorkEndMinute || _settings.WorkBreakEnabled && _settings.WorkBreakStartMinute == _settings.WorkBreakEndMinute;
-        WorkHoursSummary.Text = UiText.T(invalid ? "请选择工作日和不同的起止时间；无有效时段时暂停预测。" : "下班后应剩不再下降；今日建议按今天剩余工作时间分配。休息时段仅扣除与工作重叠的部分。");
+        WorkHoursSummary.Text = UiText.T(invalid ? "请选择工作日和不同的起止时间；无有效时段时暂停预测。" : "始终同时显示匀速与下班两个目标。上方选项仅切换速率和预算算法；工作日与时间决定下班目标。");
         TaskbarOptions.Visibility = taskbar ? Visibility.Visible : Visibility.Collapsed;
         Alignment.IsEnabled = HorizontalOffset.IsEnabled = VerticalOffset.IsEnabled = Scale.IsEnabled = PotionGap.IsEnabled = !taskbar;
         TaskbarOffsetValue.Text = $"{TaskbarOffset.Value:0}px";
