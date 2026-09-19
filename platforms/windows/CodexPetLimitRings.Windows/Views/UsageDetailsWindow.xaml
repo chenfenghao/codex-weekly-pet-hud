@@ -13,11 +13,11 @@
   <TextBlock Text="{local:Tr '剩余可用额度'}" Foreground="#939E98" FontSize="11" Margin="0,0,0,18"/>
   <DockPanel><TextBlock Text="{local:Tr '额度已用'}" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="UsedText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>
   <ProgressBar x:Name="UsedBar" Height="5" Maximum="100" Margin="0,8,0,15" Background="#2B352E" Foreground="#9BDFB5" BorderThickness="0"/>
-  <DockPanel><TextBlock Text="{local:Tr '时间已过'}" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="TimeText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>
+  <DockPanel><TextBlock x:Name="TimeLabel" Text="{local:Tr '时间已过'}" Foreground="#9EAAA2" FontSize="11"/><TextBlock x:Name="TimeText" HorizontalAlignment="Right" FontSize="11"/></DockPanel>
   <ProgressBar x:Name="TimeBar" Height="5" Maximum="100" Margin="0,8,0,18" Background="#2B352E" Foreground="#66796E" BorderThickness="0"/>
   <Grid Margin="0,4,0,16"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
    <StackPanel><TextBlock Text="{local:Tr '使用速率'}" FontSize="11" Foreground="#939E98"/><TextBlock x:Name="RatioText" FontSize="22" Margin="0,6,0,0"/></StackPanel>
-   <StackPanel Grid.Column="1"><TextBlock Text="{local:Tr '后续每日上限'}" FontSize="11" Foreground="#939E98"/><TextBlock x:Name="BudgetText" FontSize="20" Margin="0,6,0,0"/></StackPanel>
+   <StackPanel Grid.Column="1"><TextBlock x:Name="BudgetLabel" Text="{local:Tr '后续每日上限'}" FontSize="11" Foreground="#939E98"/><TextBlock x:Name="BudgetText" FontSize="20" Margin="0,6,0,0"/></StackPanel>
   </Grid>
   <TextBlock x:Name="PredictionText" FontSize="11" TextWrapping="Wrap" LineHeight="19"/>
   <TextBlock x:Name="CountdownText" FontSize="13" Margin="0,16,0,5"/>
@@ -36,6 +36,6 @@
   <DockPanel><Button Content="{local:Tr '识别并保存'}" Click="Import_OnClick" HorizontalAlignment="Left"/><Button x:Name="RefreshButton" Content="{local:Tr '自动读取额度'}" Click="RefreshButton_OnClick" HorizontalAlignment="Right" Background="#293A30" Foreground="#BDD2C4"/></DockPanel>
   <TextBlock x:Name="MessageText" FontSize="11" Foreground="#9BDFB5" TextWrapping="Wrap" Margin="0,9,0,0"/>
   <TextBlock x:Name="SourceText" FontSize="10" Foreground="#939E98" Margin="0,12,0,0" TextWrapping="Wrap"/>
-  <TextBlock Text="{local:Tr '应剩＝100%−本周时间进度；建议每日上限＝剩余额度按剩余天数均摊。点击上方「设置」调整自动读取间隔，默认 5 分钟；手动粘贴后暂停自动覆盖。'}" FontSize="10" Foreground="#75867A" TextWrapping="Wrap" LineHeight="17" Margin="0,7,0,0"/>
+  <TextBlock x:Name="PacingExplanation" Text="{local:Tr '应剩＝100%−本周时间进度；建议每日上限＝剩余额度按剩余天数均摊。点击上方「设置」调整自动读取间隔，默认 5 分钟；手动粘贴后暂停自动覆盖。'}" FontSize="10" Foreground="#75867A" TextWrapping="Wrap" LineHeight="17" Margin="0,7,0,0"/>
  </StackPanel></ScrollViewer>
 </Window>

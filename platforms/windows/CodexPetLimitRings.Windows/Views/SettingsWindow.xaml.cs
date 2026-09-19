@@ -10,7 +10,12 @@ public partial class SettingsWindow : Window
     private OverlaySettings _settings = new();
     public event Action<OverlaySettings>? SettingsChanged;
 
-    public SettingsWindow() => InitializeComponent();
+    public SettingsWindow()
+    {
+        InitializeComponent();
+        var times = Enumerable.Range(0, 96).Select(i => $"{i / 4:00}:{i % 4 * 15:00}").ToArray();
+        foreach (var choice in new[] { WorkStart, WorkEnd, WorkBreakStart, WorkBreakEnd }) choice.ItemsSource = times;
+    }
 
     public void Apply(OverlaySettings settings)
     {
@@ -20,6 +25,14 @@ public partial class SettingsWindow : Window
         LanguageChoice.SelectedItem = LanguageChoice.Items.Cast<ComboBoxItem>().First(item => item.Tag?.ToString() == settings.Language);
         DisplayModeChoice.SelectedItem = DisplayModeChoice.Items.Cast<ComboBoxItem>().First(item => item.Tag?.ToString() == settings.DisplayMode);
         TaskbarOffset.Value = settings.TaskbarOffset;
+        WorkHoursEnabled.IsChecked = settings.WorkHoursEnabled;
+        WorkBreakEnabled.IsChecked = settings.WorkBreakEnabled;
+        WorkStart.SelectedIndex = settings.WorkStartMinute / 15;
+        WorkEnd.SelectedIndex = settings.WorkEndMinute / 15;
+        WorkBreakStart.SelectedIndex = settings.WorkBreakStartMinute / 15;
+        WorkBreakEnd.SelectedIndex = settings.WorkBreakEndMinute / 15;
+        foreach (var day in WorkDaysPanel.Children.OfType<System.Windows.Controls.CheckBox>())
+            day.IsChecked = settings.WorkDays.Contains(int.Parse(day.Tag.ToString()!));
         RefreshMinutes.Value = settings.RefreshMinutes;
         ResetRadarEnabled.IsChecked = settings.ResetRadarEnabled;
         ResetNotificationsEnabled.IsChecked = settings.ResetNotificationsEnabled;
@@ -40,6 +53,13 @@ public partial class SettingsWindow : Window
         _settings.Language = (LanguageChoice.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "zh-CN";
         _settings.DisplayMode = (DisplayModeChoice.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "pet";
         _settings.TaskbarOffset = TaskbarOffset.Value;
+        _settings.WorkHoursEnabled = WorkHoursEnabled.IsChecked == true;
+        _settings.WorkDays = WorkDaysPanel.Children.OfType<System.Windows.Controls.CheckBox>().Where(day => day.IsChecked == true).Select(day => int.Parse(day.Tag.ToString()!)).ToArray();
+        _settings.WorkStartMinute = Math.Max(0, WorkStart.SelectedIndex) * 15;
+        _settings.WorkEndMinute = Math.Max(0, WorkEnd.SelectedIndex) * 15;
+        _settings.WorkBreakEnabled = WorkBreakEnabled.IsChecked == true;
+        _settings.WorkBreakStartMinute = Math.Max(0, WorkBreakStart.SelectedIndex) * 15;
+        _settings.WorkBreakEndMinute = Math.Max(0, WorkBreakEnd.SelectedIndex) * 15;
         UiText.SetLanguage(_settings.Language);
         _settings.RefreshMinutes = (int)Math.Round(RefreshMinutes.Value);
         _settings.ResetRadarEnabled = ResetRadarEnabled.IsChecked == true;
@@ -75,6 +95,10 @@ public partial class SettingsWindow : Window
     private void UpdateValueLabels()
     {
         var taskbar = _settings.DisplayMode == "taskbar";
+        WorkHoursOptions.Visibility = _settings.WorkHoursEnabled ? Visibility.Visible : Visibility.Collapsed;
+        WorkBreakStart.IsEnabled = WorkBreakEnd.IsEnabled = _settings.WorkBreakEnabled;
+        var invalid = _settings.WorkDays.Length == 0 || _settings.WorkStartMinute == _settings.WorkEndMinute || _settings.WorkBreakEnabled && _settings.WorkBreakStartMinute == _settings.WorkBreakEndMinute;
+        WorkHoursSummary.Text = UiText.T(invalid ? "请选择工作日和不同的起止时间；无有效时段时暂停预测。" : "下班后应剩不再下降；今日建议按今天剩余工作时间分配。休息时段仅扣除与工作重叠的部分。");
         TaskbarOptions.Visibility = taskbar ? Visibility.Visible : Visibility.Collapsed;
         Alignment.IsEnabled = HorizontalOffset.IsEnabled = VerticalOffset.IsEnabled = Scale.IsEnabled = PotionGap.IsEnabled = !taskbar;
         TaskbarOffsetValue.Text = $"{TaskbarOffset.Value:0}px";

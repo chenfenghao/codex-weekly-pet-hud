@@ -14,7 +14,7 @@ Requires the .NET 8 SDK, Windows x64 and PowerShell. Run these commands from the
 
 ```powershell
 dotnet build platforms/windows/CodexPetLimitRings.Windows/CodexPetLimitRings.Windows.csproj -c Release
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.2.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.3.0
 ```
 
 Use `-DotnetPath C:\path\to\dotnet.exe` to select a custom SDK. Packages are written to `dist` and include Chinese and English documentation.

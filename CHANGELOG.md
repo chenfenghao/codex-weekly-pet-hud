@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0] - 2026-09-19 · Working-hours pacing / 工作时段算法
+
+- Add optional working weekdays, start/end times and a daily break, with local-time handling and overnight shifts. Existing configurations retain all-day pacing.
+- Calculate target remaining, pace and exhaustion using scheduled work inside the fixed seven-day reset window. Count off-hours usage while freezing time progress off duty.
+- Show a budget for the remaining work today (midnight boundary), instead of a generic per-day allowance, consistently across Pet, taskbar, details and tooltips.
+- Persist bilingual settings without changing quota, reset time, display mode, language or polling interval. Invalid or empty schedules pause predictions.
+- Add work-period clipping, nights/weekends, partial days, lunch, overnight shifts, DST transitions, off-hours spending, reset boundaries and settings/UI regression checks.
+
 ## [1.2.0] - 2026-09-17 · Taskbar mode / 任务栏模式
 
 - Add Settings → Display mode → Taskbar, independent of Pet visibility. Existing installs keep Pet mode until switched.

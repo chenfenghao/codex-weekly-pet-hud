@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidatePattern('^v\d+\.\d+\.\d+$')][string]$Tag = 'v1.2.0',
+    [ValidatePattern('^v\d+\.\d+\.\d+$')][string]$Tag = 'v1.3.0',
     [string]$DotnetPath = 'dotnet'
 )
 $ErrorActionPreference = 'Stop'

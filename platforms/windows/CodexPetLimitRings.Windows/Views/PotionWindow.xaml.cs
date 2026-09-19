@@ -11,6 +11,7 @@ namespace CodexPetLimitRings.Windows.Views;
 public partial class PotionWindow : Window
 {
 
+    public OverlaySettings? PacingSettings { get; set; }
     private readonly string _accessibleLabel;
     private double _appliedScale = double.NaN;
     private bool _pointerPressed;
@@ -41,7 +42,7 @@ public partial class PotionWindow : Window
 
     public void UpdateUsage(double? remaining, long? resetAt, string source)
     {
-        var pace = WeeklyPacing.Calculate(remaining, resetAt, DateTimeOffset.Now);
+        var pace = WeeklyPacing.Calculate(remaining, resetAt, DateTimeOffset.Now, PacingSettings);
         var fresh = source is "live" or "manual";
         PaceText.Text = UiText.T(source == "none" ? "同步中" : source == "stale" ? "待更新" : pace.Status switch
         {
@@ -50,13 +51,14 @@ public partial class PotionWindow : Window
         RemainingText.Text = remaining is { } value ? UiText.F("剩余 {0:0.#}%", value) : UiText.T("剩余 —");
         var ideal = fresh && pace.TimePercent is { } time && pace.DailyBudget is not null ? $"{100 - time:0}%" : "—";
         var daily = fresh && pace.DailyBudget is { } budget ? $"≤{Math.Floor(budget * 10) / 10:0.#}%" : "—";
-        IdealText.Text = UiText.F("应剩 {0} · 建议 {1}/天", ideal, daily);
+        IdealText.Text = UiText.F(PacingSettings?.WorkHoursEnabled == true ? "应剩 {0} · 今日 {1}" : "应剩 {0} · 建议 {1}/天", ideal, daily);
         var countdown = WeeklyPacing.Countdown(resetAt, DateTimeOffset.Now);
         var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(fresh ? pace.Color : "#9AADA1")!;
         StatusDot.Fill = brush; PaceText.Foreground = brush;
         Capsule.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, brush.Color.R, brush.Color.G, brush.Color.B));
         var sourceText = UiText.T(source == "manual" ? "粘贴记录 · 不自动覆盖" : source == "live" ? "自动更新" : "等待最新数据");
         Root.ToolTip = UiText.F("周额度剩余 {0:0.#}% · {1}\n匀速使用此刻应剩 {2}；每日建议 {3}\n速率 {4:0.00}× · {5}\n{6}\n{7}", remaining, UiText.T(pace.Status), ideal, daily, pace.Ratio, countdown, pace.Prediction, sourceText);
+        if (PacingSettings?.WorkHoursEnabled == true) Root.ToolTip = $"{RemainingText.Text} · {PaceText.Text}\n{IdealText.Text}\n{pace.Prediction}\n{countdown}\n{sourceText}";
         AutomationProperties.SetName(this, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
         AutomationProperties.SetName(Root, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
     }

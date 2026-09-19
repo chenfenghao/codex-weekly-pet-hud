@@ -86,6 +86,23 @@ internal static class LanguageSelfTest
             Check(UiText.Instance.Language == "en" && changes == 2, "Live English selection emits save event");
             var file = JsonSerializer.Deserialize<OverlaySettings>(File.ReadAllText(Path.Combine(directory, "settings-roundtrip.json")))!;
             Check(file.Language == "en" && file.RefreshMinutes == 17, "Saved language retains refresh interval");
+            ((System.Windows.Controls.CheckBox)settings.FindName("WorkHoursEnabled")).IsChecked = true;
+            ((ComboBox)settings.FindName("WorkStart")).SelectedIndex = 28;
+            ((ComboBox)settings.FindName("WorkEnd")).SelectedIndex = 84;
+            var days = (System.Windows.Controls.WrapPanel)settings.FindName("WorkDaysPanel");
+            days.Children.OfType<System.Windows.Controls.CheckBox>().First(day => day.Tag.ToString() == "6").IsChecked = true;
+            var workSettings = JsonSerializer.Deserialize<OverlaySettings>(File.ReadAllText(Path.Combine(directory, "settings-roundtrip.json")))!;
+            Check(workSettings.WorkHoursEnabled && workSettings.WorkStartMinute == 420 && workSettings.WorkEndMinute == 1260 && workSettings.WorkDays.SequenceEqual(new[] {1,2,3,4,5,6}), "Work schedule UI saves 07-21 Monday-Saturday");
+            Check(workSettings.Language == "en" && workSettings.RefreshMinutes == 17, "Work schedule preserves unrelated settings");
+            capsule.PacingSettings = details.PacingSettings = workSettings;
+            capsule.UpdateUsage(usage.SecondaryRemaining, usage.SecondaryReset, usage.Source);
+            details.Update(usage, false);
+            Check(((TextBlock)capsule.FindName("IdealText")).Text.Contains("Today"), "Capsule identifies today's budget");
+            Check(((TextBlock)details.FindName("BudgetLabel")).Text == "Budget left today", "Details identifies today's budget");
+            Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "work-capsule.en.png"));
+            settings.Height = 900;
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+            Render((FrameworkElement)settings.Content, 520, 900, Path.Combine(directory, "work-settings.en.png"));
             File.WriteAllText(Path.Combine(directory, "result.txt"), $"PASS: {count} translation, formatting, live-switch, persistence, input and layout assertions.");
             return 0;
         }

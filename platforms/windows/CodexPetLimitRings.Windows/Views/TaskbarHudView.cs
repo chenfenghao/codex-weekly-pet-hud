@@ -11,6 +11,7 @@ namespace CodexPetLimitRings.Windows.Views;
 
 internal sealed class TaskbarHudView : System.Windows.Controls.Border
 {
+    public OverlaySettings? PacingSettings { get; set; }
     private readonly TextBlock _remaining = new() { FontSize = 13, FontWeight = FontWeights.SemiBold, Foreground = Brushes.WhiteSmoke };
     private readonly TextBlock _pace = new() { FontSize = 10, HorizontalAlignment = System.Windows.HorizontalAlignment.Right };
     private readonly TextBlock _target = new() { FontSize = 10, Foreground = new SolidColorBrush(Color.FromRgb(188, 208, 196)) };
@@ -38,7 +39,7 @@ internal sealed class TaskbarHudView : System.Windows.Controls.Border
 
     internal void Update(UsageSnapshot usage, string radarHeadline, string radarDetail, bool attention)
     {
-        var pace = WeeklyPacing.Calculate(usage.SecondaryRemaining, usage.SecondaryReset, DateTimeOffset.Now);
+        var pace = WeeklyPacing.Calculate(usage.SecondaryRemaining, usage.SecondaryReset, DateTimeOffset.Now, PacingSettings);
         var fresh = usage.Source is "live" or "manual";
         _remaining.Text = usage.SecondaryRemaining is { } value ? UiText.F("剩余 {0:0}%", value) : UiText.T("剩余 —");
         _pace.Text = UiText.T(usage.Source == "none" ? "同步中" : usage.Source == "stale" ? "待更新" : pace.Status switch
@@ -48,7 +49,7 @@ internal sealed class TaskbarHudView : System.Windows.Controls.Border
         _pace.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString(fresh ? pace.Color : "#9AADA1")!;
         var ideal = fresh && pace.TimePercent is { } time && pace.DailyBudget is not null ? $"{100-time:0}%" : "—";
         var daily = fresh && pace.DailyBudget is { } budget ? $"≤{Math.Floor(budget * 10) / 10:0.#}%" : "—";
-        _target.Text = UiText.F("应剩 {0} · 建议 {1}/天", ideal, daily);
+        _target.Text = UiText.F(PacingSettings?.WorkHoursEnabled == true ? "应剩 {0} · 今日 {1}" : "应剩 {0} · 建议 {1}/天", ideal, daily);
         _radar.Foreground = attention ? Brushes.Gold : Brushes.DarkSeaGreen;
         ToolTip = $"{_remaining.Text} · {_pace.Text}\n{_target.Text}\n{pace.Prediction}\n{WeeklyPacing.Countdown(usage.SecondaryReset, DateTimeOffset.Now)}\n{radarHeadline}\n{radarDetail}\n{UiText.T("单击查看详情，右键打开设置。")}";
         AutomationProperties.SetName(this, ToolTip.ToString());

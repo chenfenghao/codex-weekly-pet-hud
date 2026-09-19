@@ -3,11 +3,15 @@ using System.Text.RegularExpressions;
 
 namespace CodexPetLimitRings.Windows;
 
-public sealed record PaceResult(double? TimePercent, double? Ratio, double? DailyBudget, string Status, string Prediction, string Color);
+public sealed record PaceResult(double? TimePercent, double? Ratio, double? DailyBudget, string Status, string Prediction, string Color)
+{
+    public bool WorkHours { get; init; }
+    public double? RemainingWorkHours { get; init; }
+}
 
 public static class WeeklyPacing
 {
-    public static PaceResult Calculate(double? remaining, long? resetAt, DateTimeOffset now)
+    public static PaceResult Calculate(double? remaining, long? resetAt, DateTimeOffset now, OverlaySettings? settings = null, TimeZoneInfo? zone = null)
     {
         if (remaining is null || !double.IsFinite(remaining.Value) || resetAt is null)
             return new(null, null, null, "等待数据", UiText.T("粘贴周额度与重置时间，开始记录。"), "#A1B2A7");
@@ -18,6 +22,7 @@ public static class WeeklyPacing
         if (days <= 0) return new(100, null, null, "待确认重置", UiText.T("重置时间已到，请重新粘贴最新额度。"), "#EDC788");
         if (days > 7) return new(null, null, null, "检查时间", UiText.T("重置时间超过 7 天，暂停预测。"), "#EDC788");
         var left = Math.Clamp(remaining.Value, 0, 100);
+        if (settings?.WorkHoursEnabled == true) return CalculateWork(left, reset, now, settings, zone ?? TimeZoneInfo.Local);
         var elapsed = 7 - days;
         var time = elapsed / 7 * 100;
         var budget = Math.Min(left, left / days);
@@ -34,6 +39,35 @@ public static class WeeklyPacing
             prediction = UiText.F("预计 {0} 耗尽\n比重置提前 {1:0.#} 小时", UiText.Date(end.LocalDateTime), (reset - end).TotalHours);
         }
         return new(time, ratio, budget, status, prediction, color);
+    }
+
+    private static PaceResult CalculateWork(double left, DateTimeOffset reset, DateTimeOffset now, OverlaySettings settings, TimeZoneInfo zone)
+    {
+        var start = reset.AddDays(-7);
+        if (settings.WorkBreakEnabled && settings.WorkBreakStartMinute == settings.WorkBreakEndMinute)
+            return new(null, null, null, "检查作息", UiText.T("请选择工作日和不同的起止时间；无有效时段时暂停预测。"), "#EDC788") { WorkHours = true };
+        var intervals = WorkSchedule.Build(start, reset, settings, zone);
+        var total = WorkSchedule.Seconds(intervals, start, reset);
+        PaceResult Result(double? time, double? ratio, double? budget, string status, string prediction, string color, double? hours = null) =>
+            new(time, ratio, budget, status, prediction, color) { WorkHours = true, RemainingWorkHours = hours };
+        if (total <= 0) return Result(null, null, null, "检查作息", UiText.T("本周期没有有效工作时段，请检查工作日和上下班时间。"), "#EDC788");
+        var elapsed = WorkSchedule.Seconds(intervals, start, now);
+        var remaining = WorkSchedule.Seconds(intervals, now, reset);
+        var time = Math.Clamp(elapsed / total * 100, 0, 100);
+        var midnight = WorkSchedule.Instant(TimeZoneInfo.ConvertTime(now, zone).Date.AddDays(1), zone, false);
+        var today = WorkSchedule.Seconds(intervals, now, midnight < reset ? midnight : reset);
+        var budget = remaining > 0 ? Math.Clamp(left * today / remaining, 0, left) : 0;
+        if (left == 0) return Result(time, time > 0 ? 100 / time : null, 0, "已耗尽", UiText.T("额度已耗尽，等待重置后更新。"), "#EE9D9D", remaining / 3600);
+        if (remaining <= 0) return Result(100, null, 0, "工作已结束", UiText.T("重置前已无计划工作时间；剩余额度保留，额外使用仍计入消耗。"), "#A1B2A7", 0);
+        if (elapsed < 60) return Result(time, null, budget, "刚刚开始", UiText.T("累计工作时间满 1 分钟后估算速率；下班后的消耗也会计入。"), "#A1B2A7", remaining / 3600);
+        var used = 100 - left;
+        var ratio = used / time;
+        var status = ratio < 0.85 ? "偏慢" : ratio <= 1 + 1e-9 ? "稳健" : ratio <= 1.3 + 1e-9 ? "偏快" : "超速";
+        var color = ratio <= 1 + 1e-9 ? "#9BDFB5" : ratio <= 1.3 + 1e-9 ? "#EDC788" : "#EE9D9D";
+        var prediction = UiText.T("按当前工作时段内的平均消耗，可用到重置日。");
+        if (ratio > 1 && used > 0 && WorkSchedule.Consume(intervals, now, left * elapsed / used) is { } end)
+            prediction = UiText.F("预计 {0} 耗尽\n比重置提前 {1:0.#} 小时", UiText.Date(TimeZoneInfo.ConvertTime(end, zone).DateTime), (reset - end).TotalHours);
+        return Result(time, ratio, budget, status, prediction, color, remaining / 3600);
     }
 
     public static string Countdown(long? resetAt, DateTimeOffset now)

@@ -34,6 +34,28 @@
       </Border>
       <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
         <StackPanel>
+          <TextBlock Text="{local:Tr '额度节奏算法'}" FontSize="15" FontWeight="SemiBold"/>
+          <CheckBox x:Name="WorkHoursEnabled" Content="{local:Tr '按工作时段计算（关闭则按全天）'}" Margin="0,10,0,8" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+          <StackPanel x:Name="WorkHoursOptions">
+            <WrapPanel x:Name="WorkDaysPanel" Margin="0,0,0,10">
+              <CheckBox Content="{local:Tr '周一'}" Tag="1" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+              <CheckBox Content="{local:Tr '周二'}" Tag="2" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+              <CheckBox Content="{local:Tr '周三'}" Tag="3" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+              <CheckBox Content="{local:Tr '周四'}" Tag="4" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+              <CheckBox Content="{local:Tr '周五'}" Tag="5" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+              <CheckBox Content="{local:Tr '周六'}" Tag="6" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+              <CheckBox Content="{local:Tr '周日'}" Tag="0" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+            </WrapPanel>
+            <WrapPanel><TextBlock Text="{local:Tr '上班'}" VerticalAlignment="Center" Margin="0,0,8,0"/><ComboBox x:Name="WorkStart" Width="88" SelectionChanged="Control_OnChanged"/><TextBlock Text="{local:Tr '下班'}" VerticalAlignment="Center" Margin="16,0,8,0"/><ComboBox x:Name="WorkEnd" Width="88" SelectionChanged="Control_OnChanged"/></WrapPanel>
+            <CheckBox x:Name="WorkBreakEnabled" Content="{local:Tr '扣除休息时段'}" Margin="0,12,0,8" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
+            <WrapPanel><ComboBox x:Name="WorkBreakStart" Width="88" SelectionChanged="Control_OnChanged"/><TextBlock Text="–" Margin="10,0"/><ComboBox x:Name="WorkBreakEnd" Width="88" SelectionChanged="Control_OnChanged"/></WrapPanel>
+            <TextBlock x:Name="WorkHoursSummary" TextWrapping="Wrap" Foreground="#71717A" Margin="0,10,0,0"/>
+            <TextBlock Text="{local:Tr '使用本机时区。下班早于上班表示跨午夜，工作日按上班当天。今日额度以午夜分界；修改后会重新计算本周期。'}" TextWrapping="Wrap" Foreground="#71717A" Margin="0,8,0,0"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
+        <StackPanel>
           <TextBlock Text="{local:Tr '自动更新'}" FontSize="15" FontWeight="SemiBold"/>
           <DockPanel Margin="0,10,0,5"><TextBlock Text="{local:Tr '读取额度的间隔'}"/><TextBlock x:Name="RefreshMinutesValue" HorizontalAlignment="Right" FontWeight="SemiBold"/></DockPanel>
           <Slider x:Name="RefreshMinutes" Minimum="1" Maximum="60" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Control_OnChanged"/>

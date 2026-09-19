@@ -10,7 +10,7 @@
 
 ```powershell
 dotnet build platforms/windows/CodexPetLimitRings.Windows/CodexPetLimitRings.Windows.csproj -c Release
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.2.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.3.0
 ```
 
 可传入 `-DotnetPath C:\path\to\dotnet.exe` 使用自定义 SDK 路径。打包产物在 `dist`。

@@ -25,6 +25,23 @@ public sealed class UiText : INotifyPropertyChanged
     internal static IReadOnlyDictionary<string, string> Translations => English;
     private static readonly Dictionary<string, string> English = new()
     {
+        ["额度节奏算法"] = "Quota pacing",
+        ["按工作时段计算（关闭则按全天）"] = "Use working hours (off: all day)",
+        ["周一"] = "Mon", ["周二"] = "Tue", ["周三"] = "Wed", ["周四"] = "Thu", ["周五"] = "Fri", ["周六"] = "Sat", ["周日"] = "Sun",
+        ["上班"] = "Start", ["下班"] = "End", ["扣除休息时段"] = "Exclude a break",
+        ["应剩 {0} · 今日 {1}"] = "Target {0} · Today {1}",
+        ["计划工作时间已过"] = "Planned work time elapsed",
+        ["今日剩余可用"] = "Budget left today",
+        ["≤ {0:0.#}% 今日"] = "≤ {0:0.#}% today",
+        ["检查作息"] = "Check hours", ["工作已结束"] = "Work ended",
+        ["本周期没有有效工作时段，请检查工作日和上下班时间。"] = "No valid work time in this cycle. Check working days and start/end times.",
+        ["重置前已无计划工作时间；剩余额度保留，额外使用仍计入消耗。"] = "No planned work remains before reset. Quota is retained; extra usage still counts.",
+        ["累计工作时间满 1 分钟后估算速率；下班后的消耗也会计入。"] = "Pace becomes available after one working minute. Usage outside work hours still counts.",
+        ["按当前工作时段内的平均消耗，可用到重置日。"] = "At the average usage per working hour, quota lasts until reset.",
+        ["使用本机时区。下班早于上班表示跨午夜，工作日按上班当天。今日额度以午夜分界；修改后会重新计算本周期。"] = "Uses local time. An earlier end crosses midnight; select the shift's starting day. Today's budget ends at midnight. Changes recalculate this cycle.",
+        ["请选择工作日和不同的起止时间；无有效时段时暂停预测。"] = "Select working days and distinct start/end times. Predictions pause when no valid time exists.",
+        ["下班后应剩不再下降；今日建议按今天剩余工作时间分配。休息时段仅扣除与工作重叠的部分。"] = "Target remaining freezes outside work. Today's budget covers remaining work today. Only breaks overlapping work are excluded.",
+        ["按本机时区和工作时段计算应剩，下班与休息日暂停推进。今日建议仅包含今天午夜前剩余工作时段；临时加班消耗仍会计入。修改作息会重新计算整个周期。"] = "Target follows local working hours and pauses off duty. Today's budget covers remaining work before midnight. Extra usage still counts. Schedule changes recalculate the whole cycle.",
         ["显示模式"] = "Display mode",
         ["跟随 Codex 宠物"] = "Follow Codex Pet",
         ["任务栏（无需打开宠物）"] = "Taskbar (Pet not required)",

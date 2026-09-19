@@ -5,6 +5,13 @@ namespace CodexPetLimitRings.Windows;
 public sealed class OverlaySettings
 {
     public string Language { get; set; } = "zh-CN";
+    public bool WorkHoursEnabled { get; set; }
+    public int[] WorkDays { get; set; } = [1, 2, 3, 4, 5];
+    public int WorkStartMinute { get; set; } = 9 * 60;
+    public int WorkEndMinute { get; set; } = 22 * 60;
+    public bool WorkBreakEnabled { get; set; }
+    public int WorkBreakStartMinute { get; set; } = 12 * 60;
+    public int WorkBreakEndMinute { get; set; } = 13 * 60;
     public string DisplayMode { get; set; } = "pet";
     public double TaskbarOffset { get; set; }
     public double Scale { get; set; } = 1;
@@ -27,6 +34,11 @@ public sealed class OverlaySettings
 
     public void Normalize()
     {
+        WorkDays = (WorkDays ?? []).Where(day => day >= 0 && day <= 6).Distinct().Order().ToArray();
+        WorkStartMinute = Math.Clamp(WorkStartMinute, 0, 1439);
+        WorkEndMinute = Math.Clamp(WorkEndMinute, 0, 1439);
+        WorkBreakStartMinute = Math.Clamp(WorkBreakStartMinute, 0, 1439);
+        WorkBreakEndMinute = Math.Clamp(WorkBreakEndMinute, 0, 1439);
         Language = Language?.Trim().ToLowerInvariant() is "en" or "en-us" or "en-gb" ? "en" : "zh-CN";
         DisplayMode = DisplayMode == "taskbar" ? "taskbar" : "pet";
         TaskbarOffset = double.IsFinite(TaskbarOffset) ? Math.Clamp(TaskbarOffset, 0, 1600) : 0;

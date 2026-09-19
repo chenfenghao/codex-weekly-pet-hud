@@ -6,6 +6,7 @@ namespace CodexPetLimitRings.Windows.Views;
 
 public partial class UsageDetailsWindow : Window
 {
+    public OverlaySettings? PacingSettings { get; set; }
     private bool _allowClose;
     private string? _lastLanguage;
     public event Action? RefreshRequested;
@@ -26,14 +27,18 @@ public partial class UsageDetailsWindow : Window
     }
     public void Update(UsageSnapshot usage, bool refreshing)
     {
-        var pace = WeeklyPacing.Calculate(usage.SecondaryRemaining, usage.SecondaryReset, DateTimeOffset.Now);
+        var pace = WeeklyPacing.Calculate(usage.SecondaryRemaining, usage.SecondaryReset, DateTimeOffset.Now, PacingSettings);
         var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(pace.Color)!;
         RemainingText.Text = usage.SecondaryRemaining is { } remaining ? $"{remaining:0.#}%" : "—%";
         StatusText.Text = UiText.T(pace.Status); StatusText.Foreground = brush; UsedBar.Foreground = brush;
         UsedText.Text = usage.SecondaryUsed is { } used ? $"{used:0.#}%" : "—"; UsedBar.Value = usage.SecondaryUsed ?? 0;
         TimeText.Text = pace.TimePercent is { } time ? $"{time:0.0}%" : "—"; TimeBar.Value = pace.TimePercent ?? 0;
         RatioText.Text = pace.Ratio is { } ratio ? $"{ratio:0.00} ×" : "—";
-        BudgetText.Text = pace.DailyBudget is { } budget ? UiText.F("≤ {0:0.#}% /天", Math.Floor(budget * 10) / 10) : "—";
+        var work = PacingSettings?.WorkHoursEnabled == true;
+        TimeLabel.Text = UiText.T(work ? "计划工作时间已过" : "时间已过");
+        BudgetLabel.Text = UiText.T(work ? "今日剩余可用" : "后续每日上限");
+        BudgetText.Text = pace.DailyBudget is { } budget ? UiText.F(work ? "≤ {0:0.#}% 今日" : "≤ {0:0.#}% /天", Math.Floor(budget * 10) / 10) : "—";
+        PacingExplanation.Text = UiText.T(work ? "按本机时区和工作时段计算应剩，下班与休息日暂停推进。今日建议仅包含今天午夜前剩余工作时段；临时加班消耗仍会计入。修改作息会重新计算整个周期。" : "应剩＝100%−本周时间进度；建议每日上限＝剩余额度按剩余天数均摊。点击上方「设置」调整自动读取间隔，默认 5 分钟；手动粘贴后暂停自动覆盖。");
         PredictionText.Text = pace.Prediction; PredictionText.Foreground = brush;
         CountdownText.Text = UiText.T("距离重置  ") + WeeklyPacing.Countdown(usage.SecondaryReset, DateTimeOffset.Now);
         try { ResetText.Text = usage.SecondaryReset is { } reset ? DateTimeOffset.FromUnixTimeSeconds(reset).LocalDateTime.ToString(UiText.IsEnglish ? "yyyy MMM d, ddd HH:mm" : "yyyy年M月d日 ddd HH:mm", UiText.Culture) : UiText.T("本机时区"); }

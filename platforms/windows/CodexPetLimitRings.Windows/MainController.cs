@@ -48,6 +48,7 @@ public sealed class MainController : IDisposable
     {
         _settings = _store.LoadSettings();
         UiText.SetLanguage(_settings.Language);
+        _secondaryPotion.PacingSettings = _taskbarHud.View.PacingSettings = _details.PacingSettings = _settings;
         _resetSignals = _store.LoadResetSignals();
         var saved = _settings.AutoReadUsage ? _store.LoadLatestUsage() ?? _store.LoadManualUsage() : _store.LoadManualUsage();
         _usage = saved is null ? UsageSnapshot.Empty : _settings.AutoReadUsage ? saved with { Source = "stale" } : saved;
@@ -492,6 +493,7 @@ public sealed class MainController : IDisposable
         _settings = settings;
         _store.SaveSettings(_settings);
         UiText.SetLanguage(_settings.Language);
+        _secondaryPotion.PacingSettings = _taskbarHud.View.PacingSettings = _details.PacingSettings = _settings;
         _details.ApplyLanguage();
         _details.Update(_usage, _refreshing);
         _secondaryPotion.UpdateUsage(_usage.SecondaryRemaining, _usage.SecondaryReset, _usage.Source);

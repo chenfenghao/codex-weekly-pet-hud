@@ -6,6 +6,12 @@
 
 放在 **Codex Pet 上方**的轻量 Windows 状态条：看剩余额度、判断使用快慢，并接收社区重置信号提醒。
 
+**v1.3.0 工作时段算法**：设置 → 额度节奏算法 →「按工作时段计算」。勾选工作日、上下班时间，可选扣除休息时段（15 分钟精度）。关闭该选项保留原来的全天算法；升级不会自动改变已有用户的算法模式。
+
+工作时段模式中，**应剩 = 当前周期剩余工作小时 ÷ 本周期全部工作小时 × 100%**；**今日建议 = 实际剩余额度 × 今天剩余工作小时 ÷ 本周期剩余工作小时**。按本机时区、重置前固定 7 天窗口计算并裁切首尾班次，下班/休息日应剩不下降，额外使用仍计入已用额度。速率与耗尽预测也采用工作时段，耗尽时间跳过夜间、休息日与休息时段。例如周一到周六 07:00–21:00、不扣休息，每周为 84 小时。
+
+下班早于上班表示跨午夜，工作日按班次开始当天选择；「今日」以午夜为界。下班后今日建议为 0；重置前无剩余工作时间时保留实际余额并暂停速率预测。空工作日、相同起止时间或整段工作被休息覆盖时提示检查作息。修改作息会按新设置重新计算整个周期。
+
 **v1.2.0 新增任务栏模式**：在「设置 → 显示模式」选择「任务栏（无需打开宠物）」，即可独立显示剩余额度和使用节奏。原来的宠物模式仍保留。
 
 <img src="docs/images/taskbar.zh-CN.png" alt="任务栏两行额度显示，示例数据" width="285">
@@ -39,7 +45,7 @@
 
 ## 下载与启动
 
-1. 在 [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) 下载 `Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip`。
+1. 在 [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) 下载 `Codex-Weekly-Pet-HUD-v1.3.0-Windows-x64.zip`。
 2. **完整解压**到固定目录，保留 EXE 旁边的 DLL 文件。
 3. 双击 `CodexWeeklyPetHud.exe`。可以打开 Codex Pet，或从系统托盘进入设置切换任务栏模式。
 4. 单击状态条查看详情，点「设置」调整间隔、位置、大小和提醒；系统托盘菜单也能进入设置或退出。
@@ -52,7 +58,7 @@
 升级时先通过托盘退出旧版，再解压新版；设置保存在用户数据目录，不因替换程序文件丢失。卸载便携版时退出并删除解压目录即可。
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.3.0-Windows-x64.zip -Algorithm SHA256
 ```
 
 将结果与同一 Release 的 `SHA256SUMS.txt` 对照。
@@ -139,7 +145,7 @@ Get-FileHash .\Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip -Algorithm SHA256
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.2.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.3.0
 ```
 
 产物在 `dist`，包含便携 ZIP 与 SHA-256 校验文件。打包脚本只读取构建输出和项目文档，不读取用户数据目录。也可直接构建：

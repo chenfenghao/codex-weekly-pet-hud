@@ -6,6 +6,12 @@
 
 A compact Windows status bar **above your Codex Pet**. Track your remaining weekly quota, see whether your usage is on pace, and receive community reset alerts.
 
+**v1.3.0: working-hours pacing.** In Settings → Quota pacing, enable **Use working hours**, select weekdays and start/end times, and optionally exclude a break (15-minute precision). Turning this off preserves the original all-day algorithm; existing users keep their selected mode on upgrade.
+
+With working hours, **target remaining = remaining work hours / total cycle work hours × 100%**. **Today's budget = actual remaining quota × work hours left today / work hours left in the cycle**. The fixed seven-day window ends at the quota reset timestamp; shifts are clipped to its boundaries using local time. Target remaining freezes off duty, while extra usage still counts. Pace and exhaustion predictions use working hours, skipping nights, days off and breaks. For example, Monday–Saturday 07:00–21:00 without breaks totals 84 hours.
+
+An earlier end time crosses midnight; select the weekday on which the shift starts. Today's budget ends at midnight and is zero after work. When no work remains before reset, the actual balance is retained and pace prediction pauses. Empty days, equal times or breaks covering all work pause prediction with a schedule warning. Changing the schedule recalculates the entire cycle.
+
 **New in v1.2.0: taskbar mode.** Choose **Settings → Display mode → Taskbar (Pet not required)** for an independent two-line display. Pet mode remains available.
 
 <img src="docs/images/taskbar.en.png" alt="Two-line taskbar quota display with sample data" width="285">
@@ -39,7 +45,7 @@ Only the primary horizontal taskbar is supported; widget size follows taskbar he
 
 ## Download and run
 
-1. Download `Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
+1. Download `Codex-Weekly-Pet-HUD-v1.3.0-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
 2. **Extract the entire archive** to a permanent folder. Keep the DLL files beside the executable.
 3. Run `CodexWeeklyPetHud.exe`, then open Pet in Codex or select Taskbar mode from the tray Settings menu.
 4. Click the status bar, then **设置 (Settings)**. Under **语言 / Language**, choose **English**.
@@ -51,7 +57,7 @@ Requires Windows 10/11 x64 and a signed-in Codex desktop app (Pet support is onl
 To upgrade, exit the previous version through its tray menu before extracting the new version. Settings are stored outside the application folder and survive replacement. To uninstall a portable copy, exit it and delete its extracted folder.
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.2.0-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.3.0-Windows-x64.zip -Algorithm SHA256
 ```
 
 Compare the result with `SHA256SUMS.txt` from the same release.
@@ -140,7 +146,7 @@ Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and 
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.2.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.3.0
 ```
 
 The portable ZIP and SHA-256 file are written to `dist`. Packaging reads only build output and project documentation, not your user data directory. To publish the executable directly:

@@ -24,7 +24,7 @@ jobs:
         run: dotnet run --project platforms/windows/tests/LayoutTests/LayoutTests.csproj -c Release
       - name: Package Windows x64
         shell: pwsh
-        run: ./scripts/release/package-weekly.ps1 -Tag v1.2.0
+        run: ./scripts/release/package-weekly.ps1 -Tag v1.3.0
       - name: Reset signal policy tests
         shell: pwsh
         run: |
@@ -33,6 +33,10 @@ jobs:
           $test = Start-Process $exe.FullName -ArgumentList @('--reset-self-test', ('"' + $output + '"')) -Wait -PassThru
           Get-Content (Join-Path $output 'result.txt')
           if ($test.ExitCode -ne 0) { throw 'Reset signal tests failed.' }
+          $pace = Join-Path $PWD 'artifacts/pace-tests'
+          $test = Start-Process $exe.FullName -ArgumentList @('--pace-self-test', ('"' + $pace + '"')) -Wait -PassThru
+          Get-Content (Join-Path $pace 'result.txt')
+          if ($test.ExitCode -ne 0) { throw 'Pacing tests failed.' }
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: windows-x64
