@@ -5,6 +5,7 @@ namespace CodexPetLimitRings.Windows.Views;
 
 public partial class SettingsWindow : Window
 {
+    public long? ResetAt { get; set; }
     private bool _applying;
     private bool _allowClose;
     private OverlaySettings _settings = new();
@@ -13,6 +14,12 @@ public partial class SettingsWindow : Window
     public SettingsWindow()
     {
         InitializeComponent();
+        ScheduleEditor.Edited += (day, start, end) =>
+        {
+            if (day is {} d) { var box = WorkDaysPanel.Children.OfType<System.Windows.Controls.CheckBox>().First(b => b.Tag.ToString() == d.ToString()); box.IsChecked = box.IsChecked != true; }
+            if (start is {} a) WorkStart.SelectedIndex = a / 15;
+            if (end is {} b) WorkEnd.SelectedIndex = b / 15;
+        };
         var times = Enumerable.Range(0, 96).Select(i => $"{i / 4:00}:{i % 4 * 15:00}").ToArray();
         foreach (var choice in new[] { WorkStart, WorkEnd, WorkBreakStart, WorkBreakEnd }) choice.ItemsSource = times;
     }
@@ -95,6 +102,11 @@ public partial class SettingsWindow : Window
     private void UpdateValueLabels()
     {
         var taskbar = _settings.DisplayMode == "taskbar";
+        ScheduleEditor.Update(_settings);
+        var now = DateTimeOffset.Now;
+        var valid = WeeklyTargets.Calculate(ResetAt, now, _settings).EvenRemaining is not null;
+        PreviewLabel.Text = UiText.T(valid ? "当前周期预览 · 修改后立即更新" : "作息示例预览 · 未获取重置时间，暂用未来 7 天");
+        SchedulePreview.Update(valid ? ResetAt : now.AddDays(7).ToUnixTimeSeconds(), now, _settings);
         WorkHoursOptions.Visibility = Visibility.Visible;
         WorkBreakStart.IsEnabled = WorkBreakEnd.IsEnabled = _settings.WorkBreakEnabled;
         var invalid = _settings.WorkDays.Length == 0 || _settings.WorkStartMinute == _settings.WorkEndMinute || _settings.WorkBreakEnabled && _settings.WorkBreakStartMinute == _settings.WorkBreakEndMinute;

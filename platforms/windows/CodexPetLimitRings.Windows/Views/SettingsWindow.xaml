@@ -1,6 +1,6 @@
 <Window x:Class="CodexPetLimitRings.Windows.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:CodexPetLimitRings.Windows"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:CodexPetLimitRings.Windows" xmlns:views="clr-namespace:CodexPetLimitRings.Windows.Views"
         Title="{local:Tr '周额度 · 挂件设置'}" Width="520" Height="620" MinWidth="480" MinHeight="450"
         FontFamily="Microsoft YaHei UI" Background="#FAFAFA" WindowStartupLocation="CenterScreen" Closing="Window_OnClosing">
   <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -37,6 +37,8 @@
           <TextBlock Text="{local:Tr '额度节奏算法'}" FontSize="15" FontWeight="SemiBold"/>
           <CheckBox x:Name="WorkHoursEnabled" Content="{local:Tr '速率与预算按工作时段计算'}" Margin="0,10,0,8" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
           <StackPanel x:Name="WorkHoursOptions">
+            <views:WorkScheduleEditor x:Name="ScheduleEditor" Height="211" Margin="0,8,0,4"/>
+            <TextBlock Text="{local:Tr '点击星期切换，拖动圆点调整统一作息；也可使用下方控件。'}" Foreground="#71717A" TextWrapping="Wrap" Margin="0,0,0,12"/>
             <WrapPanel x:Name="WorkDaysPanel" Margin="0,0,0,10">
               <CheckBox Content="{local:Tr '周一'}" Tag="1" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
               <CheckBox Content="{local:Tr '周二'}" Tag="2" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
@@ -49,6 +51,8 @@
             <WrapPanel><TextBlock Text="{local:Tr '上班'}" VerticalAlignment="Center" Margin="0,0,8,0"/><ComboBox x:Name="WorkStart" Width="88" SelectionChanged="Control_OnChanged"/><TextBlock Text="{local:Tr '下班'}" VerticalAlignment="Center" Margin="16,0,8,0"/><ComboBox x:Name="WorkEnd" Width="88" SelectionChanged="Control_OnChanged"/></WrapPanel>
             <CheckBox x:Name="WorkBreakEnabled" Content="{local:Tr '扣除休息时段'}" Margin="0,12,0,8" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
             <WrapPanel><ComboBox x:Name="WorkBreakStart" Width="88" SelectionChanged="Control_OnChanged"/><TextBlock Text="–" Margin="10,0"/><ComboBox x:Name="WorkBreakEnd" Width="88" SelectionChanged="Control_OnChanged"/></WrapPanel>
+            <TextBlock x:Name="PreviewLabel" FontSize="11" Foreground="#71717A" Margin="0,14,0,5"/>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="207"><views:QuotaDashboard x:Name="SchedulePreview" AllocationOnly="True" Width="580" Height="188"/></ScrollViewer>
             <TextBlock x:Name="WorkHoursSummary" TextWrapping="Wrap" Foreground="#71717A" Margin="0,10,0,0"/>
             <TextBlock Text="{local:Tr '使用本机时区。下班早于上班表示跨午夜，工作日按上班当天。今日额度以午夜分界；修改后会重新计算本周期。'}" TextWrapping="Wrap" Foreground="#71717A" Margin="0,8,0,0"/>
           </StackPanel>

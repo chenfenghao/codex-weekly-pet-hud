@@ -6,7 +6,21 @@
 
 A compact Windows status bar **above your Codex Pet**. Track your remaining weekly quota, see whether your usage is on pace, and receive community reset alerts.
 
-**v1.4.0: two targets together.** Below actual quota remaining, the HUD shows **Even** and **Close**.
+**v1.5.0: visual quota planning.** Click the HUD for daily planned allocations, work hours and end-of-day targets, with today highlighted and days off dimmed. The chart compares calendar pacing, your work plan and actual observations.
+
+<img src="docs/images/dashboard.en.png" alt="Daily quota allocation and balance chart with sample data" width="640">
+
+- **Compact gauge:** actual balance and today's headroom stay visible. White upper tick = even-use target now; blue lower tick = closing target. Hover for exact values. Green is above both, amber between them, red below both; stale data is gray.
+- **Today's headroom:** actual remaining minus the closing target, in percentage points of the weekly allowance. Negative values say Below. The adaptive work-hours budget remains in details as a separate reference.
+- **Daily cards:** split by local calendar date, so a seven-day cycle can span eight dates. Partial boundary days and overnight shifts are weighted by actual work hours, excluding breaks. Keep is the planned balance at the end of that calendar date. Hover for scheduled times. Allocations total 100% before display rounding.
+- **Balance chart:** dashed gray = even-use, blue = work plan, green = observations; manual imports are hollow dots. Only consecutive automatic reads in the same cycle without refills connect, within twice the refresh interval plus two minutes. Missing history stays blank.
+- **Visual schedule:** in Settings → Quota pacing, click weekdays and drag handles to change shared shift times in 15-minute steps, or use the selectors below. Overnight end handles refer to the next day; breaks appear as gaps. The allocation preview updates immediately and scrolls horizontally in narrow windows.
+
+<img src="docs/images/schedule.en.png" alt="Editable weekly schedule with sample data" width="550">
+
+History starts with successful reads or imports after upgrading. Local `quota-history.json` stores timestamps, resets, balances and sources only, retaining the last 30 days and at most 50,000 points on writes. History is excluded from releases. Schedule edits recalculate the plan without changing observations.
+
+**Two target formulas.** Gauge markers and details retain both **Even** and **Close**.
 
 - **Even (now) = wall-clock time until reset / seven days × 100%**, changing continuously.
 - **Close = work hours after today's shift ends until reset / total work hours in the cycle × 100%**. This is the planned balance at shift end, fixed throughout the day. Neither target depends on actual quota spending.
@@ -38,7 +52,7 @@ Only the primary horizontal taskbar is supported; widget size follows taskbar he
 
 ## Features
 
-- **Small, three-row HUD:** approximately 190 × 72 device-independent pixels by default, with adjustable scale. Shows remaining quota, pace, even-use and shift-end targets and reset radar.
+- **Small, three-row HUD:** approximately 190 × 72 device-independent pixels by default, with adjustable scale. Shows quota remaining, today’s headroom, target markers and reset radar; pace remains in details and tooltips.
 - **Chinese and English UI:** switch instantly in Settings. The choice is saved and restored on restart; no separate executable is needed.
 - **Automatic weekly quota updates:** every 5 minutes by default, adjustable from 1 to 60 minutes, with manual refresh available.
 - **Follows your real Pet:** drag the Pet or the status bar. Adjust placement, offsets and spacing; the HUD moves aside near screen edges.
@@ -50,7 +64,7 @@ Only the primary horizontal taskbar is supported; widget size follows taskbar he
 
 ## Download and run
 
-1. Download `Codex-Weekly-Pet-HUD-v1.4.0-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
+1. Download `Codex-Weekly-Pet-HUD-v1.5.0-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
 2. **Extract the entire archive** to a permanent folder. Keep the DLL files beside the executable.
 3. Run `CodexWeeklyPetHud.exe`, then open Pet in Codex or select Taskbar mode from the tray Settings menu.
 4. Click the status bar, then **设置 (Settings)**. Under **语言 / Language**, choose **English**.
@@ -62,7 +76,7 @@ Requires Windows 10/11 x64 and a signed-in Codex desktop app (Pet support is onl
 To upgrade, exit the previous version through its tray menu before extracting the new version. Settings are stored outside the application folder and survive replacement. To uninstall a portable copy, exit it and delete its extracted folder.
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.4.0-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.5.0-Windows-x64.zip -Algorithm SHA256
 ```
 
 Compare the result with `SHA256SUMS.txt` from the same release.
@@ -152,7 +166,7 @@ Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and 
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.4.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.5.0
 ```
 
 The portable ZIP and SHA-256 file are written to `dist`. Packaging reads only build output and project documentation, not your user data directory. To publish the executable directly:

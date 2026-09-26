@@ -25,6 +25,9 @@ public sealed class UiText : INotifyPropertyChanged
     internal static IReadOnlyDictionary<string, string> Translations => English;
     private static readonly Dictionary<string, string> English = new()
     {
+        ["点击星期切换，拖动圆点调整统一作息；也可使用下方控件。"] = "Click weekdays or drag handles to edit shared work hours. The controls below also work.",
+        ["当前周期预览 · 修改后立即更新"] = "Current cycle preview · Updates as you edit",
+        ["作息示例预览 · 未获取重置时间，暂用未来 7 天"] = "Schedule preview · Using the next 7 days until a reset is available",
         ["匀速 {0} · 下班 {1}"] = "Even {0} · Close {1}",
         ["匀速 {0} · 休息 {1}"] = "Even {0} · Off {1}",
         ["匀速应剩（此刻）"] = "Even target (now)",

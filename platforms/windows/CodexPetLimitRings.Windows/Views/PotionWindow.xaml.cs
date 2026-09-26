@@ -51,13 +51,14 @@ public partial class PotionWindow : Window
             "待确认重置" => "待重置", "刚刚开始" => "初始期", "检查时间" => "查时间", "等待数据" => "待数据", _ => pace.Status
         });
         RemainingText.Text = remaining is { } value ? UiText.F("剩余 {0:0.#}%", value) : UiText.T("剩余 —");
-        IdealText.Text = targets.Compact(fresh);
+        IdealText.Text = QuotaVisualModel.BudgetText(fresh ? remaining : null, targets);
+        Gauge.Update(remaining, targets, fresh);
         var countdown = WeeklyPacing.Countdown(resetAt, DateTimeOffset.Now);
         var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(fresh ? pace.Color : "#9AADA1")!;
         StatusDot.Fill = brush; PaceText.Foreground = brush;
         Capsule.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, brush.Color.R, brush.Color.G, brush.Color.B));
         var sourceText = UiText.T(source == "manual" ? "粘贴记录 · 不自动覆盖" : source == "live" ? "自动更新" : "等待最新数据");
-        Root.ToolTip = $"{RemainingText.Text} · {PaceText.Text}\n{IdealText.Text}\n{UiText.T("匀速：按自然时间计算此刻应剩；下班：按工作时段计算下班时应留。目标不随实际消耗改变。") }\n{pace.Prediction}\n{countdown}\n{sourceText}";
+        Root.ToolTip = $"{RemainingText.Text} · {PaceText.Text}\n{IdealText.Text}\n{targets.Compact(fresh)}\n{UiText.T("匀速：按自然时间计算此刻应剩；下班：按工作时段计算下班时应留。目标不随实际消耗改变。") }\n{pace.Prediction}\n{countdown}\n{sourceText}";
         if (targets.ResetBeforeClose) Root.ToolTip += "\n" + UiText.T("本周期在下班前重置，工作目标截止于重置时刻。");
         AutomationProperties.SetName(this, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
         AutomationProperties.SetName(Root, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");

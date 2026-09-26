@@ -14,6 +14,7 @@ internal static class PacingSelfTest
         void Check(bool passed, string name) { if (!passed) throw new InvalidOperationException(name); assertions++; }
         WorkPacingSelfTest.Run(Check);
         TargetSelfTest.Run(Check);
+        VisualQuotaSelfTest.Run(Check, directory);
         var now = new DateTimeOffset(2026, 9, 13, 8, 0, 0, TimeSpan.FromHours(8));
         var parsed = WeeklyPasteParser.Parse("重置时间：2026年9月19日 16:12\n剩余 80%", now);
         Check(parsed.SecondaryUsed == 20 && parsed.SecondaryRemaining == 80, "Remaining percent conversion");
@@ -76,7 +77,7 @@ internal static class PacingSelfTest
         var details = new UsageDetailsWindow();
         details.Update(parsed, false);
         details.UpdateResetSignal("重置雷达 · 暂无新信号", "最近检查 9/13 11:00 · 每 5 分钟\n上次全局重置公告：9/12 16:09\n社区已确认重置公告", false, false);
-        Render((FrameworkElement)details.Content, 370, 680, Path.Combine(directory, "details.png"));
+        Render((FrameworkElement)details.Content, 640, 820, Path.Combine(directory, "details.png"));
         capsule.Close(); details.ClosePermanently();
         File.WriteAllText(Path.Combine(directory, "result.txt"), $"PASS: {assertions} assertions; capsule and details rendered.");
         return 0;

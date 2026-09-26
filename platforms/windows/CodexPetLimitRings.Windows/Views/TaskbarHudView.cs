@@ -14,6 +14,7 @@ internal sealed class TaskbarHudView : System.Windows.Controls.Border
     public OverlaySettings? PacingSettings { get; set; } = new();
     private readonly TextBlock _remaining = new() { FontSize = 13, FontWeight = FontWeights.SemiBold, Foreground = Brushes.WhiteSmoke };
     private readonly TextBlock _pace = new() { FontSize = 10, HorizontalAlignment = System.Windows.HorizontalAlignment.Right };
+    private readonly QuotaGauge _gauge = new() { IsHitTestVisible = false };
     private readonly TextBlock _target = new() { FontSize = 10, Foreground = new SolidColorBrush(Color.FromRgb(188, 208, 196)) };
     private readonly TextBlock _radar = new() { Text = "●", FontSize = 9, HorizontalAlignment = System.Windows.HorizontalAlignment.Right };
     internal event Action? Clicked;
@@ -27,10 +28,12 @@ internal sealed class TaskbarHudView : System.Windows.Controls.Border
         CornerRadius = new CornerRadius(5);
         Cursor = System.Windows.Input.Cursors.Hand;
         var grid = new Grid { Width = 178, Height = 30 };
-        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(17) });
-        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(13) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(16) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(14) });
         grid.Children.Add(_remaining); grid.Children.Add(_pace);
-        Grid.SetRow(_target, 1); grid.Children.Add(_target);
+        _target.HorizontalAlignment = System.Windows.HorizontalAlignment.Right; _target.FontSize = 9; _target.VerticalAlignment = VerticalAlignment.Center; grid.Children.Add(_target);
+        Grid.SetRow(_gauge, 1); _gauge.Margin = new Thickness(0,0,12,0); grid.Children.Add(_gauge);
+        _pace.Visibility = Visibility.Collapsed;
         Grid.SetRow(_radar, 1); grid.Children.Add(_radar);
         Child = new Viewbox { Stretch = Stretch.Uniform, Margin = new Thickness(6, 2, 6, 2), Child = grid };
         MouseLeftButtonUp += (_, e) => { e.Handled = true; Clicked?.Invoke(); };
@@ -49,9 +52,10 @@ internal sealed class TaskbarHudView : System.Windows.Controls.Border
             "待确认重置" => "待重置", "刚刚开始" => "初始期", "检查时间" => "查时间", "等待数据" => "待数据", _ => pace.Status
         });
         _pace.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString(fresh ? pace.Color : "#9AADA1")!;
-        _target.Text = targets.Compact(fresh);
+        _target.Text = QuotaVisualModel.BudgetText(fresh ? usage.SecondaryRemaining : null, targets, true);
+        _gauge.Update(usage.SecondaryRemaining, targets, fresh);
         _radar.Foreground = attention ? Brushes.Gold : Brushes.DarkSeaGreen;
-        ToolTip = $"{_remaining.Text} · {_pace.Text}\n{_target.Text}\n{pace.Prediction}\n{WeeklyPacing.Countdown(usage.SecondaryReset, DateTimeOffset.Now)}\n{radarHeadline}\n{radarDetail}\n{UiText.T("单击查看详情，右键打开设置。")}";
+        ToolTip = $"{_remaining.Text} · {_pace.Text}\n{_target.Text}\n{targets.Compact(fresh)}\n{pace.Prediction}\n{WeeklyPacing.Countdown(usage.SecondaryReset, DateTimeOffset.Now)}\n{radarHeadline}\n{radarDetail}\n{UiText.T("单击查看详情，右键打开设置。")}";
         ToolTip += "\n" + UiText.T("匀速：按自然时间计算此刻应剩；下班：按工作时段计算下班时应留。目标不随实际消耗改变。");
         if (targets.ResetBeforeClose) ToolTip += "\n" + UiText.T("本周期在下班前重置，工作目标截止于重置时刻。");
         AutomationProperties.SetName(this, ToolTip.ToString());

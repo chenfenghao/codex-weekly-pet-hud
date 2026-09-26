@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0] - 2026-09-26 · Visual quota planning
+
+- Add daily allocation cards, work hours, end-of-day targets and a balance chart comparing calendar pacing, work plans and actual observations.
+- Replace compact target text with a balance gauge, two distinguishable markers and closing-target headroom. Exact target values remain in tooltips and details.
+- Add an editable weekly timeline with weekday toggles, 15-minute shift handles, existing time selectors and a live allocation preview.
+- Record successful automatic reads and manual imports locally; persist up to 30 days / 50,000 points. Never backfill missing history or connect gaps, refills, manual imports or different reset cycles.
+- Add allocation conservation, partial/overnight shift, persistence, missing-data and visual schedule interaction tests. Update bilingual screenshots, documentation and website.
+
 ## [1.4.0] - 2026-09-19 · Even-use and shift-end targets
 
 - Show both targets together in Pet and taskbar modes: Even is the ideal balance now over seven calendar days; Close is the planned balance at today's shift end, weighted by working hours.

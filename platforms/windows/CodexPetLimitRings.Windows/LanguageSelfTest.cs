@@ -58,7 +58,7 @@ internal static class LanguageSelfTest
             Check(settings.Title == "Weekly quota · Settings", "Settings title binding");
             Check(details.Title == "Weekly quota · Pace companion", "Details title binding");
             Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "capsule.en.png"));
-            Render((FrameworkElement)details.Content, 410, 680, Path.Combine(directory, "details.en.png"));
+            Render((FrameworkElement)details.Content, 640, 820, Path.Combine(directory, "details.en.png"));
             Render((FrameworkElement)settings.Content, 520, 620, Path.Combine(directory, "settings.en.png"));
             foreach (var view in new FrameworkElement[] { (FrameworkElement)capsule.Content, (FrameworkElement)details.Content })
                 foreach (var text in TextBlocks(view))
@@ -97,12 +97,24 @@ internal static class LanguageSelfTest
             capsule.PacingSettings = details.PacingSettings = workSettings;
             capsule.UpdateUsage(usage.SecondaryRemaining, usage.SecondaryReset, usage.Source);
             details.Update(usage, false);
-            Check(((TextBlock)capsule.FindName("IdealText")).Text.Contains("Even") && (((TextBlock)capsule.FindName("IdealText")).Text.Contains("Close") || ((TextBlock)capsule.FindName("IdealText")).Text.Contains("Off")), "Capsule shows both targets");
+            Check(!string.IsNullOrWhiteSpace(((TextBlock)capsule.FindName("IdealText")).Text) && capsule.FindName("Gauge") is QuotaGauge, "Capsule shows daily budget and target gauge");
             Check(((TextBlock)details.FindName("BudgetLabel")).Text == "Budget left today", "Details identifies today's budget");
             Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "work-capsule.en.png"));
             settings.Height = 900;
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             Render((FrameworkElement)settings.Content, 520, 900, Path.Combine(directory, "work-settings.en.png"));
+            var scheduleEditor = (WorkScheduleEditor)settings.FindName("ScheduleEditor");
+            scheduleEditor.Measure(new System.Windows.Size(440,211)); scheduleEditor.Arrange(new Rect(0,0,440,211));
+            Check(scheduleEditor.BeginEdit(new System.Windows.Point(48+378*420d/1440,29)), "Shift handle starts drag");
+            scheduleEditor.DragTo(48+378*480d/1440);
+            Check(((ComboBox)settings.FindName("WorkStart")).SelectedIndex == 32, "Visual drag updates time selector");
+            var dragSaved = JsonSerializer.Deserialize<OverlaySettings>(File.ReadAllText(Path.Combine(directory,"settings-roundtrip.json")))!;
+            Check(dragSaved.WorkStartMinute == 480 && dragSaved.RefreshMinutes == 17, "Visual drag saves shared schedule without changing refresh");
+            Check(scheduleEditor.BeginEdit(new System.Windows.Point(10,29+6*27)), "Weekday label accepts click");
+            Check(days.Children.OfType<System.Windows.Controls.CheckBox>().First(day=>day.Tag.ToString()=="0").IsChecked == true, "Visual weekday toggle updates checkbox");
+            Check(scheduleEditor.BeginEdit(new System.Windows.Point(48+378*1260d/1440,29)), "End handle starts drag");
+            scheduleEditor.DragTo(48+378*1200d/1440);
+            Check(((ComboBox)settings.FindName("WorkEnd")).SelectedIndex == 80, "End drag updates closing time");
             File.WriteAllText(Path.Combine(directory, "result.txt"), $"PASS: {count} translation, formatting, live-switch, persistence, input and layout assertions.");
             return 0;
         }

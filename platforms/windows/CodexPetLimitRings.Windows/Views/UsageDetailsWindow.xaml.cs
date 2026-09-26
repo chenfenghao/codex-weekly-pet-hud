@@ -7,6 +7,7 @@ namespace CodexPetLimitRings.Windows.Views;
 public partial class UsageDetailsWindow : Window
 {
     public OverlaySettings? PacingSettings { get; set; } = new();
+    public IReadOnlyList<QuotaObservation> History { get; set; } = [];
     private bool _allowClose;
     private string? _lastLanguage;
     public event Action? RefreshRequested;
@@ -30,6 +31,8 @@ public partial class UsageDetailsWindow : Window
         var pace = WeeklyPacing.Calculate(usage.SecondaryRemaining, usage.SecondaryReset, DateTimeOffset.Now, PacingSettings);
         var targets = WeeklyTargets.Calculate(usage.SecondaryReset, DateTimeOffset.Now, PacingSettings);
         var fresh = usage.Source is "live" or "manual";
+        CloseBudgetText.Text = QuotaVisualModel.BudgetText(fresh ? usage.SecondaryRemaining : null, targets);
+        Dashboard.Update(usage.SecondaryReset, DateTimeOffset.Now, PacingSettings ?? new(), History);
         EvenTargetText.Text = QuotaTargets.Percent(fresh ? targets.EvenRemaining : null);
         CloseTargetText.Text = QuotaTargets.Percent(fresh ? targets.CloseRemaining : null);
         CloseTargetLabel.Text = UiText.T(targets.DayOff ? "休息日应剩" : "下班应剩");
@@ -89,7 +92,8 @@ public partial class UsageDetailsWindow : Window
         if (_lastLanguage == UiText.Instance.Language) return;
         _lastLanguage = UiText.Instance.Language;
         MessageText.Text = "";
-        Width = UiText.IsEnglish ? 410 : 370;
+        Width = Math.Min(640, SystemParameters.WorkArea.Width);
+        Height = Math.Min(820, SystemParameters.WorkArea.Height);
     }
     private void Window_OnClosing(object? sender, System.ComponentModel.CancelEventArgs e) { if (!_allowClose) { e.Cancel = true; Hide(); } }
 }

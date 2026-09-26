@@ -11,6 +11,7 @@ namespace CodexPetLimitRings.Windows;
 public sealed class MainController : IDisposable
 {
     private readonly SettingsStore _store = new();
+    private readonly QuotaHistory _history;
     private readonly CodexPetStateReader _stateReader = new();
     private readonly UsageService _usageService = new();
     private readonly ResetSignalService _resetSignalService = new();
@@ -46,6 +47,8 @@ public sealed class MainController : IDisposable
 
     public MainController()
     {
+        _history = new QuotaHistory(Path.Combine(_store.DataDirectory, "quota-history.json"));
+        _details.History = _history.Points;
         _settings = _store.LoadSettings();
         UiText.SetLanguage(_settings.Language);
         _secondaryPotion.PacingSettings = _taskbarHud.View.PacingSettings = _details.PacingSettings = _settings;
@@ -78,6 +81,7 @@ public sealed class MainController : IDisposable
         _details.RadarRefreshRequested += () => _ = RefreshResetSignalsAsync(true);
         _details.UsageImported += usage =>
         {
+            _history.Record(usage); _details.History = _history.Points;
             _usageRevision++; _usage = usage; _settings.AutoReadUsage = false; _store.SaveSettings(_settings); _store.SaveManualUsage(usage);
             _secondaryPotion.UpdateUsage(usage.SecondaryRemaining, usage.SecondaryReset, usage.Source);
             UpdateTrayText();
@@ -357,6 +361,7 @@ public sealed class MainController : IDisposable
             if (refreshed is not null && revision == _usageRevision && (force || (_hudActive && generation == _visibilityGeneration)))
             {
                 _usage = refreshed;
+                _history.Record(refreshed); _details.History = _history.Points;
                 _settings.AutoReadUsage = true; _store.SaveSettings(_settings); _store.SaveLatestUsage(refreshed);
                 _lastUsageSuccess = DateTimeOffset.Now;
                 _secondaryPotion.UpdateUsage(_usage.SecondaryRemaining, _usage.SecondaryReset, _usage.Source);
@@ -482,6 +487,7 @@ public sealed class MainController : IDisposable
 
     private void ShowSettings()
     {
+        _settingsWindow.ResetAt = _usage.SecondaryReset;
         _settingsWindow.Apply(_settings);
         if (!_settingsWindow.IsVisible) _settingsWindow.Show();
         _settingsWindow.Activate();
