@@ -6,6 +6,13 @@
 
 放在 **Codex Pet 上方**的轻量 Windows 状态条：看剩余额度、判断使用快慢，并接收社区重置信号提醒。
 
+**v1.6.0 简单逐日设置**：设置 → 额度节奏算法，按实际重置周期列出每天，不固定从周日或周一开始。每行只有日期、工作/休息、上班、下班和一个「复制」按钮。时间可下拉选择，也可直接输入，修改后自动保存。
+
+- 先沿用已有作息，只改不同的那几天；今天会高亮。
+- 点击「复制」，将该行时间用于今天起的其他工作日，保留休息日和过去日期。
+- 本周期各日期独立，包括首尾同一个星期几的两个日期。修改一天会更新它在后续周期中的星期默认值，同时保留本周期其他日期；下周期无需重新填写。
+- 常用作息和统一午休收进「更多设置」。默认作息修改不覆盖已经单独设置的本周期。首尾只计算周期内时长，较早的下班时间表示次日下班。
+
 **v1.5.0 可视化分配**：点击挂件查看本周期每天的计划额度、工作小时和日末应留；今天高亮，休息日置灰。下面的走势图同时显示自然时间匀速线、工作计划线和实际读取记录。
 
 <img src="docs/images/dashboard.zh-CN.png" alt="本周期每天的计划额度与余额走势，示例数据" width="640">
@@ -14,9 +21,9 @@
 - **今日还可用**：实际剩余减去下班目标，单位是整周额度的百分点；负值显示「低于目标」。它和详情里的按剩余工作时长动态分配的「今日剩余可用」是两种参考：前者是对固定目标的余量，后者是自适应预算。
 - **每日卡片**：按本机自然日分列，7 天周期可能覆盖 8 个日期。周期首尾和夜班按实际小时拆分，休息时段扣除；「留」是该日期结束时的计划余额。悬停查看具体工作时间。分配总量为 100%，显示四舍五入可能有微小差异。
 - **余额走势**：灰色虚线为全天匀速、蓝线为工作计划、绿点/线为实际读取，手动导入为空心点。只连接同周期、未补额且间隔不超过两次刷新加 2 分钟的连续自动读取。没有记录的时段留空，不推算历史数据。
-- **可视作息**：设置 → 额度节奏算法中，点击星期切换工作日，拖动圆点调整所有工作日的统一上下班时间（15 分钟精度）。也可用下方选择框；夜班下班圆点表示次日时间，休息段显示为空隙。下方实时预览分配，窄窗口可横向滚动。
+- **逐日作息**：按重置周期逐日设置工作/休息及起止时间，改完自动保存。在「更多设置」中查看实时分配预览、设置统一午休。
 
-<img src="docs/images/schedule.zh-CN.png" alt="可拖动的工作日时间表，示例数据" width="550">
+<img src="docs/images/schedule.zh-CN.png" alt="按重置周期逐日设置，示例数据" width="550">
 
 实际记录从新版成功读取或粘贴后开始，保存在本机 `quota-history.json`，写入时保留最近 30 天、最多 50,000 点。仅保存时间、重置时间、余额和来源，发布包不包含这些数据。修改作息会重算计划线，实际记录不变。
 
@@ -64,7 +71,7 @@
 
 ## 下载与启动
 
-1. 在 [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) 下载 `Codex-Weekly-Pet-HUD-v1.5.0-Windows-x64.zip`。
+1. 在 [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) 下载 `Codex-Weekly-Pet-HUD-v1.6.0-Windows-x64.zip`。
 2. **完整解压**到固定目录，保留 EXE 旁边的 DLL 文件。
 3. 双击 `CodexWeeklyPetHud.exe`。可以打开 Codex Pet，或从系统托盘进入设置切换任务栏模式。
 4. 单击状态条查看详情，点「设置」调整间隔、位置、大小和提醒；系统托盘菜单也能进入设置或退出。
@@ -77,7 +84,7 @@
 升级时先通过托盘退出旧版，再解压新版；设置保存在用户数据目录，不因替换程序文件丢失。卸载便携版时退出并删除解压目录即可。
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.5.0-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.6.0-Windows-x64.zip -Algorithm SHA256
 ```
 
 将结果与同一 Release 的 `SHA256SUMS.txt` 对照。
@@ -165,7 +172,7 @@ Get-FileHash .\Codex-Weekly-Pet-HUD-v1.5.0-Windows-x64.zip -Algorithm SHA256
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.5.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.6.0
 ```
 
 产物在 `dist`，包含便携 ZIP 与 SHA-256 校验文件。打包脚本只读取构建输出和项目文档，不读取用户数据目录。也可直接构建：

@@ -70,7 +70,7 @@ public sealed class QuotaDashboard : FrameworkElement
     private string _cache = "";
     public void Update(long? reset, DateTimeOffset now, OverlaySettings settings, IReadOnlyList<QuotaObservation>? history = null)
     {
-        var key = $"{reset}|{now.ToUnixTimeSeconds()/30}|{UiText.Instance.Language}|{settings.WorkStartMinute}|{settings.WorkEndMinute}|{string.Join(',',settings.WorkDays)}|{settings.WorkBreakEnabled}|{settings.WorkBreakStartMinute}|{settings.WorkBreakEndMinute}|{history?.Count}|{history?.LastOrDefault()}|{settings.RefreshMinutes}";
+        var key = $"{DailySchedule.Fingerprint(settings,reset)}|{reset}|{now.ToUnixTimeSeconds()/30}|{UiText.Instance.Language}|{settings.WorkStartMinute}|{settings.WorkEndMinute}|{string.Join(',',settings.WorkDays)}|{settings.WorkBreakEnabled}|{settings.WorkBreakStartMinute}|{settings.WorkBreakEndMinute}|{history?.Count}|{history?.LastOrDefault()}|{settings.RefreshMinutes}";
         if (_cache == key) return;
         _cache = key; _now = now; _plan = QuotaVisualModel.Build(reset, now, settings);
         _targets = WeeklyTargets.Calculate(reset,now,settings); _history = history ?? [];

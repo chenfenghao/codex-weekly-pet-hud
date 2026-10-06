@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0] - 2026-10-06 · Simple daily schedules
+
+- Replace the shared timetable in Settings with dates ordered by the actual reset cycle. Each row has Work/Off, editable start/end times and Copy; changes save immediately.
+- Copy times only to remaining workdays, preserving days off and past dates. Keep current-cycle dates independent, including repeated boundary weekdays, and reuse edited weekday defaults in future cycles.
+- Route allocation, pace, budgets and closing targets through the same per-date schedule, including overnight carry-in and partial cycle boundaries.
+- Preserve legacy settings and keep shared default hours, breaks and allocation previews under More settings. Store up to eight edited cycle plans locally.
+- Add daily model, persistence, invalid input, UI save-event and copy interaction regression coverage; refresh bilingual documentation and screenshots.
+
 ## [1.5.0] - 2026-09-26 · Visual quota planning
 
 - Add daily allocation cards, work hours, end-of-day targets and a balance chart comparing calendar pacing, work plans and actual observations.

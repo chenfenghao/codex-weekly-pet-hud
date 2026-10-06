@@ -14,6 +14,7 @@ internal static class PacingSelfTest
         void Check(bool passed, string name) { if (!passed) throw new InvalidOperationException(name); assertions++; }
         WorkPacingSelfTest.Run(Check);
         TargetSelfTest.Run(Check);
+        DailyScheduleSelfTest.Run(Check, directory);
         VisualQuotaSelfTest.Run(Check, directory);
         var now = new DateTimeOffset(2026, 9, 13, 8, 0, 0, TimeSpan.FromHours(8));
         var parsed = WeeklyPasteParser.Parse("重置时间：2026年9月19日 16:12\n剩余 80%", now);

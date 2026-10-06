@@ -82,6 +82,7 @@ public sealed class MainController : IDisposable
         _details.UsageImported += usage =>
         {
             _history.Record(usage); _details.History = _history.Points;
+            _settingsWindow.ResetAt = usage.SecondaryReset;
             _usageRevision++; _usage = usage; _settings.AutoReadUsage = false; _store.SaveSettings(_settings); _store.SaveManualUsage(usage);
             _secondaryPotion.UpdateUsage(usage.SecondaryRemaining, usage.SecondaryReset, usage.Source);
             UpdateTrayText();
@@ -362,6 +363,7 @@ public sealed class MainController : IDisposable
             {
                 _usage = refreshed;
                 _history.Record(refreshed); _details.History = _history.Points;
+                _settingsWindow.ResetAt = refreshed.SecondaryReset;
                 _settings.AutoReadUsage = true; _store.SaveSettings(_settings); _store.SaveLatestUsage(refreshed);
                 _lastUsageSuccess = DateTimeOffset.Now;
                 _secondaryPotion.UpdateUsage(_usage.SecondaryRemaining, _usage.SecondaryReset, _usage.Source);

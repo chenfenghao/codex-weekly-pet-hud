@@ -20,7 +20,7 @@ public static class WeeklyTargets
         var left = (reset - now).TotalSeconds;
         if (left <= 0 || left > 7 * 86400) return empty;
         var even = Math.Clamp(left / (7 * 86400) * 100, 0, 100);
-        if (settings is null || settings.WorkStartMinute == settings.WorkEndMinute ||
+        if (settings is null ||
             settings.WorkBreakEnabled && settings.WorkBreakStartMinute == settings.WorkBreakEndMinute)
             return empty with { EvenRemaining = even };
         zone ??= TimeZoneInfo.Local;
@@ -30,17 +30,19 @@ public static class WeeklyTargets
         if (total <= 0) return empty with { EvenRemaining = even };
         var local = TimeZoneInfo.ConvertTime(now, zone);
         var date = local.Date;
-        var overnight = settings.WorkEndMinute < settings.WorkStartMinute;
-        var previousShift = overnight && settings.WorkDays.Contains((int)date.AddDays(-1).DayOfWeek);
-        var previousEnd = WorkSchedule.Instant(date.AddMinutes(settings.WorkEndMinute), zone, true);
-        var todayShift = settings.WorkDays.Contains((int)date.DayOfWeek);
+        var daily = DailySchedule.Get(settings, date, resetAt);
+        var previous = DailySchedule.Get(settings, date.AddDays(-1), resetAt);
+        var overnight = daily.EndMinute < daily.StartMinute;
+        var previousShift = previous.Working && previous.EndMinute < previous.StartMinute;
+        var previousEnd = WorkSchedule.Instant(date.AddMinutes(previous.EndMinute), zone, true);
+        var todayShift = daily.Working && daily.StartMinute != daily.EndMinute;
         // An active overnight shift retains its closing target across midnight.
         // On an off-day immediately following it, retain that same closing target.
         var usePrevious = previousShift && (now < previousEnd || !todayShift);
         var dayOff = !todayShift && !usePrevious;
         var end = usePrevious ? previousEnd : dayOff
             ? WorkSchedule.Instant(date.AddDays(1), zone, false)
-            : WorkSchedule.Instant(date.AddDays(overnight ? 1 : 0).AddMinutes(settings.WorkEndMinute), zone, true);
+            : WorkSchedule.Instant(date.AddDays(overnight ? 1 : 0).AddMinutes(daily.EndMinute), zone, true);
         var deadline = end > reset ? reset : end;
         var future = WorkSchedule.Seconds(intervals, deadline < start ? start : deadline, reset);
         return new(even, Math.Clamp(future / total * 100, 0, 100), deadline, dayOff, end > reset);

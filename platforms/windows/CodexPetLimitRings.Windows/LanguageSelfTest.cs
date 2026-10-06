@@ -103,18 +103,14 @@ internal static class LanguageSelfTest
             settings.Height = 900;
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             Render((FrameworkElement)settings.Content, 520, 900, Path.Combine(directory, "work-settings.en.png"));
-            var scheduleEditor = (WorkScheduleEditor)settings.FindName("ScheduleEditor");
-            scheduleEditor.Measure(new System.Windows.Size(440,211)); scheduleEditor.Arrange(new Rect(0,0,440,211));
-            Check(scheduleEditor.BeginEdit(new System.Windows.Point(48+378*420d/1440,29)), "Shift handle starts drag");
-            scheduleEditor.DragTo(48+378*480d/1440);
-            Check(((ComboBox)settings.FindName("WorkStart")).SelectedIndex == 32, "Visual drag updates time selector");
-            var dragSaved = JsonSerializer.Deserialize<OverlaySettings>(File.ReadAllText(Path.Combine(directory,"settings-roundtrip.json")))!;
-            Check(dragSaved.WorkStartMinute == 480 && dragSaved.RefreshMinutes == 17, "Visual drag saves shared schedule without changing refresh");
-            Check(scheduleEditor.BeginEdit(new System.Windows.Point(10,29+6*27)), "Weekday label accepts click");
-            Check(days.Children.OfType<System.Windows.Controls.CheckBox>().First(day=>day.Tag.ToString()=="0").IsChecked == true, "Visual weekday toggle updates checkbox");
-            Check(scheduleEditor.BeginEdit(new System.Windows.Point(48+378*1260d/1440,29)), "End handle starts drag");
-            scheduleEditor.DragTo(48+378*1200d/1440);
-            Check(((ComboBox)settings.FindName("WorkEnd")).SelectedIndex == 80, "End drag updates closing time");
+            settings.ResetAt = usage.SecondaryReset;
+            var dayEditor = (CycleDayEditor)settings.FindName("DayEditor");
+            var dailyRow = dayEditor.Rows.First(row => row.Date >= DateTimeOffset.Now.LocalDateTime.Date);
+            dailyRow.Start.Text = "10:15"; dailyRow.End.Text = "18:45"; dayEditor.Commit(dailyRow);
+            var dailySaved = JsonSerializer.Deserialize<OverlaySettings>(File.ReadAllText(Path.Combine(directory, "settings-roundtrip.json")))!;
+            Check(DailySchedule.Get(dailySaved, dailyRow.Date, usage.SecondaryReset).StartMinute == 615, "Daily settings emit persistence event through SettingsWindow");
+            Check(dailySaved.RefreshMinutes == 17 && dailySaved.Language == "en", "Daily setting keeps unrelated preferences");
+            Render((FrameworkElement)settings.Content, 520, 900, Path.Combine(directory, "daily-settings.en.png"));
             File.WriteAllText(Path.Combine(directory, "result.txt"), $"PASS: {count} translation, formatting, live-switch, persistence, input and layout assertions.");
             return 0;
         }

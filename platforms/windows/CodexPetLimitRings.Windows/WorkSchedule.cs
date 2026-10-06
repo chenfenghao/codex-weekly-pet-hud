@@ -9,14 +9,14 @@ internal static class WorkSchedule
     internal static List<WorkInterval> Build(DateTimeOffset start, DateTimeOffset end, OverlaySettings settings, TimeZoneInfo zone)
     {
         var result = new List<WorkInterval>();
-        if (settings.WorkStartMinute == settings.WorkEndMinute || settings.WorkDays is null) return result;
         var first = TimeZoneInfo.ConvertTime(start, zone).Date.AddDays(-1);
         var last = TimeZoneInfo.ConvertTime(end, zone).Date;
         for (var date = first; date <= last; date = date.AddDays(1))
         {
-            if (!settings.WorkDays.Contains((int)date.DayOfWeek)) continue;
-            var localStart = date.AddMinutes(settings.WorkStartMinute);
-            var localEnd = date.AddMinutes(settings.WorkEndMinute);
+            var daily = DailySchedule.Get(settings, date, end.ToUnixTimeSeconds());
+            if (!daily.Working || daily.StartMinute == daily.EndMinute) continue;
+            var localStart = date.AddMinutes(daily.StartMinute);
+            var localEnd = date.AddMinutes(daily.EndMinute);
             if (localEnd <= localStart) localEnd = localEnd.AddDays(1);
             var shiftStart = Instant(localStart, zone, false);
             var shiftEnd = Instant(localEnd, zone, true);

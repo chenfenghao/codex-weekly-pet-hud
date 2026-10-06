@@ -20,7 +20,7 @@ COPY = {
         'stats': [('190 × 72', '默认尺寸 · 可缩放'), ('1–60 min', '更新间隔 · 默认 5 分钟'), ('中文 / EN', '界面语言 · 随时切换')],
         'featureTitle': '需要的信息，刚好够用。',
         'features': [
-            ('01', '看懂使用节奏', '余额条显示匀速与下班目标，展开查看每天的计划分配和实际余额走势。点击星期、拖动作息边界，实时预览工作日额度分配。'),
+            ('01', '看懂使用节奏', '余额条显示匀速与下班目标，展开查看每天的计划分配和实际余额走势。按重置周期逐日设置工作与休息，只改当天时间即可自动保存，还能一键复制给后续工作日。'),
             ('02', '重置信号到来时提醒', '从 codex-reset.com 读取公开社区信号。新强信号或重置公告高亮并可通知；历史公告静默，同一状态不重复提醒。'),
             ('03', '跟随宠物，也会让路', '默认跟随宠物，也可在设置中切换到任务栏独立显示，无需打开 Pet。两种模式均在受支持的系统面板打开时暂时隐藏。'),
         ],
@@ -51,7 +51,7 @@ COPY = {
         'stats': [('190 × 72', 'Default size · Adjustable scale'), ('1–60 min', 'Refresh interval · 5 by default'), ('中文 / EN', 'Switch language anytime')],
         'featureTitle': 'The information you need. Just enough.',
         'features': [
-            ('01', 'Understand your pace', 'Compare balance with even-use and closing targets. Open daily allocation cards and balance history; edit weekdays and drag shift handles to preview the plan.'),
+            ('01', 'Understand your pace', 'Compare balance with even-use and closing targets. Open daily allocation cards and balance history; set each date’s work hours in reset-cycle order, with automatic saving and one-click copying to remaining workdays.'),
             ('02', 'Hear about reset signals', 'Reads public community signals from codex-reset.com. New strong signals and reset announcements can alert you. History syncs silently; repeated states do not notify again.'),
             ('03', 'Follows your Pet. Makes room.', 'Follow your Pet, or choose Taskbar mode in Settings for an independent display with Pet closed. Both modes temporarily hide during supported system flyouts.'),
         ],

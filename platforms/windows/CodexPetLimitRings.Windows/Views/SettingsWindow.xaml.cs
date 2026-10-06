@@ -5,7 +5,12 @@ namespace CodexPetLimitRings.Windows.Views;
 
 public partial class SettingsWindow : Window
 {
-    public long? ResetAt { get; set; }
+    private long? _resetAt;
+    public long? ResetAt
+    {
+        get => _resetAt;
+        set { if (_resetAt == value) return; _resetAt=value; if (IsLoaded) { DayEditor.Update(_settings,value); UpdateSchedulePreview(); } }
+    }
     private bool _applying;
     private bool _allowClose;
     private OverlaySettings _settings = new();
@@ -14,11 +19,11 @@ public partial class SettingsWindow : Window
     public SettingsWindow()
     {
         InitializeComponent();
-        ScheduleEditor.Edited += (day, start, end) =>
+        DayEditor.Changed += () =>
         {
-            if (day is {} d) { var box = WorkDaysPanel.Children.OfType<System.Windows.Controls.CheckBox>().First(b => b.Tag.ToString() == d.ToString()); box.IsChecked = box.IsChecked != true; }
-            if (start is {} a) WorkStart.SelectedIndex = a / 15;
-            if (end is {} b) WorkEnd.SelectedIndex = b / 15;
+            _settings.Normalize();
+            UpdateSchedulePreview();
+            SettingsChanged?.Invoke(_settings);
         };
         var times = Enumerable.Range(0, 96).Select(i => $"{i / 4:00}:{i % 4 * 15:00}").ToArray();
         foreach (var choice in new[] { WorkStart, WorkEnd, WorkBreakStart, WorkBreakEnd }) choice.ItemsSource = times;
@@ -57,6 +62,8 @@ public partial class SettingsWindow : Window
     private void Control_OnChanged(object sender, RoutedEventArgs e)
     {
         if (_applying || !IsLoaded) return;
+        if (ReferenceEquals(sender, WorkStart) || ReferenceEquals(sender, WorkEnd) || WorkDaysPanel.Children.Contains(sender as UIElement))
+            _settings.WeeklyWorkHours.Clear();
         _settings.Language = (LanguageChoice.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "zh-CN";
         _settings.DisplayMode = (DisplayModeChoice.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "pet";
         _settings.TaskbarOffset = TaskbarOffset.Value;
@@ -102,14 +109,12 @@ public partial class SettingsWindow : Window
     private void UpdateValueLabels()
     {
         var taskbar = _settings.DisplayMode == "taskbar";
-        ScheduleEditor.Update(_settings);
-        var now = DateTimeOffset.Now;
-        var valid = WeeklyTargets.Calculate(ResetAt, now, _settings).EvenRemaining is not null;
-        PreviewLabel.Text = UiText.T(valid ? "当前周期预览 · 修改后立即更新" : "作息示例预览 · 未获取重置时间，暂用未来 7 天");
-        SchedulePreview.Update(valid ? ResetAt : now.AddDays(7).ToUnixTimeSeconds(), now, _settings);
+        DayEditor.Update(_settings, ResetAt);
+        UpdateSchedulePreview();
         WorkHoursOptions.Visibility = Visibility.Visible;
         WorkBreakStart.IsEnabled = WorkBreakEnd.IsEnabled = _settings.WorkBreakEnabled;
-        var invalid = _settings.WorkDays.Length == 0 || _settings.WorkStartMinute == _settings.WorkEndMinute || _settings.WorkBreakEnabled && _settings.WorkBreakStartMinute == _settings.WorkBreakEndMinute;
+        var target = WeeklyTargets.Calculate(ResetAt, DateTimeOffset.Now, _settings);
+        var invalid = target.EvenRemaining is not null && target.CloseRemaining is null;
         WorkHoursSummary.Text = UiText.T(invalid ? "请选择工作日和不同的起止时间；无有效时段时暂停预测。" : "始终同时显示匀速与下班两个目标。上方选项仅切换速率和预算算法；工作日与时间决定下班目标。");
         TaskbarOptions.Visibility = taskbar ? Visibility.Visible : Visibility.Collapsed;
         Alignment.IsEnabled = HorizontalOffset.IsEnabled = VerticalOffset.IsEnabled = Scale.IsEnabled = PotionGap.IsEnabled = !taskbar;
@@ -119,6 +124,14 @@ public partial class SettingsWindow : Window
         HorizontalOffsetValue.Text = $"{HorizontalOffset.Value:+0;-0;0}px";
         VerticalOffsetValue.Text = $"{VerticalOffset.Value:+0;-0;0}px";
         PotionGapValue.Text = $"{PotionGap.Value:0}px";
+    }
+
+    private void UpdateSchedulePreview()
+    {
+        var now = DateTimeOffset.Now;
+        var valid = WeeklyTargets.Calculate(ResetAt, now, _settings).EvenRemaining is not null;
+        PreviewLabel.Text = UiText.T(valid ? "当前周期预览 · 修改后立即更新" : "作息示例预览 · 未获取重置时间，暂用未来 7 天");
+        SchedulePreview.Update(valid ? ResetAt : now.AddDays(7).ToUnixTimeSeconds(), now, _settings);
     }
 
     public void ClosePermanently() { _allowClose = true; Close(); }

@@ -2,6 +2,11 @@ using System.Text.Json.Serialization;
 
 namespace CodexPetLimitRings.Windows;
 
+public sealed record DailyWorkHours(bool Working, int StartMinute, int EndMinute)
+{
+    public DailyWorkHours Normalize() => this with { StartMinute = Math.Clamp(StartMinute, 0, 1439), EndMinute = Math.Clamp(EndMinute, 0, 1439) };
+}
+
 public sealed class OverlaySettings
 {
     public string Language { get; set; } = "zh-CN";
@@ -12,6 +17,8 @@ public sealed class OverlaySettings
     public bool WorkBreakEnabled { get; set; }
     public int WorkBreakStartMinute { get; set; } = 12 * 60;
     public int WorkBreakEndMinute { get; set; } = 13 * 60;
+    public Dictionary<int, DailyWorkHours> WeeklyWorkHours { get; set; } = new();
+    public Dictionary<long, Dictionary<string, DailyWorkHours>> CycleWorkHours { get; set; } = new();
     public string DisplayMode { get; set; } = "pet";
     public double TaskbarOffset { get; set; }
     public double Scale { get; set; } = 1;
@@ -39,6 +46,12 @@ public sealed class OverlaySettings
         WorkEndMinute = Math.Clamp(WorkEndMinute, 0, 1439);
         WorkBreakStartMinute = Math.Clamp(WorkBreakStartMinute, 0, 1439);
         WorkBreakEndMinute = Math.Clamp(WorkBreakEndMinute, 0, 1439);
+        WeeklyWorkHours = (WeeklyWorkHours ?? new()).Where(p => p.Key is >= 0 and <= 6 && p.Value is not null)
+            .ToDictionary(p => p.Key, p => p.Value.Normalize());
+        CycleWorkHours = (CycleWorkHours ?? new()).Where(p => p.Key is > 0 and <= 253402300799 && p.Value is not null)
+            .OrderByDescending(p => p.Key).Take(8).ToDictionary(p => p.Key, p => p.Value
+                .Where(d => d.Value is not null && DateOnly.TryParseExact(d.Key, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _))
+                .Take(10).ToDictionary(d => d.Key, d => d.Value.Normalize()));
         Language = Language?.Trim().ToLowerInvariant() is "en" or "en-us" or "en-gb" ? "en" : "zh-CN";
         DisplayMode = DisplayMode == "taskbar" ? "taskbar" : "pet";
         TaskbarOffset = double.IsFinite(TaskbarOffset) ? Math.Clamp(TaskbarOffset, 0, 1600) : 0;

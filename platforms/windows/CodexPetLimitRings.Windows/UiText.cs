@@ -25,6 +25,8 @@ public sealed class UiText : INotifyPropertyChanged
     internal static IReadOnlyDictionary<string, string> Translations => English;
     private static readonly Dictionary<string, string> English = new()
     {
+        ["更多设置（默认作息 / 午休）"] = "More settings (default hours / break)",
+        ["默认作息用于以后周期；修改这里不会覆盖已经设置的本周期。"] = "Default hours apply to future cycles. They do not overwrite the cycle you have already edited.",
         ["点击星期切换，拖动圆点调整统一作息；也可使用下方控件。"] = "Click weekdays or drag handles to edit shared work hours. The controls below also work.",
         ["当前周期预览 · 修改后立即更新"] = "Current cycle preview · Updates as you edit",
         ["作息示例预览 · 未获取重置时间，暂用未来 7 天"] = "Schedule preview · Using the next 7 days until a reset is available",
