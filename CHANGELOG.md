@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.6.2] - 2026-10-23 · Windows 11 taskbar fix and compact interface
+
+### Changed
+
+- Reduce the details window from 640 × 820 to 560 × 600 and separate Overview, Plan & history and Manual import. Keep refresh in a fixed footer; expand radar details and extra metrics on demand.
+- Reduce Settings from 520 × 760 to 520 × 620, grouped into General, Schedule and Appearance. Hide irrelevant Pet appearance controls in taskbar mode while retaining their values.
+- Show below-target headroom in a warning color. Preserve all quota calculations, schedule editing, history, alerts and display modes.
+- Extend bilingual visual checks to every tab, fixed-footer reachability and mode-specific settings navigation.
+
+### Fixed
+
+- Fix the taskbar HUD remaining invisible behind Windows 11's composition surface despite a valid, clickable child HWND. Use WPF per-pixel transparency for layered child rendering and declare Windows 10/11 manifest compatibility.
+- Make native rendering tests compare both HUD background and text with the expected WPF image; a blank light taskbar no longer passes. Save on-screen captures even on failure.
+- Reproduced the failure and verified the fix on Windows 11 26H2 build 26300.9711 at 100% scaling. Other Windows builds, DPI settings, Explorer restarts and auto-hide require separate verification.
+
 ## [1.6.0] - 2026-10-06 · Simple daily schedules
 
 - Replace the shared timetable in Settings with dates ordered by the actual reset cycle. Each row has Work/Off, editable start/end times and Copy; changes save immediately.
@@ -194,7 +209,8 @@ All notable changes to Codex Pet HUD are documented here. This project follows [
 - Access tokens remain in memory and are never copied to settings or logs
 - Release archives are checked for forbidden private files and include SHA-256 checksums
 
-[Unreleased]: https://github.com/himomohi/codex-pet-hud/compare/v0.1.10...HEAD
+[Unreleased]: https://github.com/chenfenghao/codex-weekly-pet-hud/compare/v1.6.2...HEAD
+[1.6.2]: https://github.com/chenfenghao/codex-weekly-pet-hud/compare/v1.6.0...v1.6.2
 [0.1.10]: https://github.com/himomohi/codex-pet-hud/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/himomohi/codex-pet-hud/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/himomohi/codex-pet-hud/compare/v0.1.7...v0.1.8

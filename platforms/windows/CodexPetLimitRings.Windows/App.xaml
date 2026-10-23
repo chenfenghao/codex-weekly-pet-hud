@@ -6,6 +6,30 @@
     <SolidColorBrush x:Key="CardBrush" Color="#F7F7F8" />
     <SolidColorBrush x:Key="BorderBrush" Color="#E4E4E7" />
     <SolidColorBrush x:Key="MutedBrush" Color="#71717A" />
+    <Style x:Key="CompactTabItem" TargetType="TabItem">
+      <Setter Property="Foreground" Value="{DynamicResource TabMutedBrush}" />
+      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TabItem">
+        <Border x:Name="TabBorder" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}" Margin="0,0,4,0" BorderThickness="1" BorderBrush="Transparent">
+          <ContentPresenter x:Name="TabHeader" ContentSource="Header" RecognizesAccessKey="True" HorizontalAlignment="Center" />
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsSelected" Value="True"><Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource TabSelectedBrush}"/><Setter Property="Foreground" Value="{DynamicResource TabTextBrush}"/><Setter TargetName="TabHeader" Property="TextElement.FontWeight" Value="SemiBold"/></Trigger>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource TabMutedBrush}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="CompactTabs" TargetType="TabControl">
+      <Setter Property="ItemContainerStyle" Value="{StaticResource CompactTabItem}" />
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TabControl">
+        <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+          <TabPanel IsItemsHost="True" KeyboardNavigation.TabIndex="1"/>
+          <ContentPresenter x:Name="PART_SelectedContentHost" Grid.Row="1" ContentSource="SelectedContent" Margin="0,12,0,0"/>
+        </Grid>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
     <Style TargetType="Button">
       <Setter Property="Padding" Value="12,7" />
       <Setter Property="Margin" Value="0,4,0,4" />

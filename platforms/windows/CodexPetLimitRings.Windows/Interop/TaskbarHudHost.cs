@@ -48,17 +48,23 @@ internal sealed class TaskbarHudHost : IDisposable
                 {
                     ParentWindow = parent, WindowStyle = 0x40000000 | 0x04000000, // CHILD | CLIPSIBLINGS
                     ExtendedWindowStyle = 0x08000000 | 0x00000080, // NOACTIVATE | TOOLWINDOW
+                    // Windows 11's XAML taskbar can cover a normal WPF child surface
+                    // even when the HWND is visible and receives clicks. Let WPF
+                    // create and paint a layered child (supported since Windows 8).
+                    // UsesPerPixelOpacity is the old API and ignores WS_CHILD.
+                    UsesPerPixelTransparency = true,
                     PositionX = p.X, PositionY = p.Y, Width = p.Width, Height = p.Height
                 });
                 _source.RootVisual = View;
                 _parent = parent;
-                AppLog.Write("Taskbar HUD attached to primary taskbar.");
+                AppLog.Write("Taskbar HUD attached to primary taskbar (layered WPF child).");
             }
             catch (Exception error)
             {
                 Detach(); _retryAfter = DateTimeOffset.UtcNow.AddSeconds(5);
                 Status = "任务栏正在连接";
-                AppLog.Write($"Taskbar attach failed: {error.GetType().Name}.");
+                var nativeCode = error is System.ComponentModel.Win32Exception win32 ? $" ({win32.NativeErrorCode})" : string.Empty;
+                AppLog.Write($"Taskbar attach failed: {error.GetType().Name}{nativeCode}.");
                 return false;
             }
             finally { if (previous != 0) SetThreadDpiAwarenessContext(previous); }

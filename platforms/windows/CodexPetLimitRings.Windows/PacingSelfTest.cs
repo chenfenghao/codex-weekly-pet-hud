@@ -78,7 +78,7 @@ internal static class PacingSelfTest
         var details = new UsageDetailsWindow();
         details.Update(parsed, false);
         details.UpdateResetSignal("重置雷达 · 暂无新信号", "最近检查 9/13 11:00 · 每 5 分钟\n上次全局重置公告：9/12 16:09\n社区已确认重置公告", false, false);
-        Render((FrameworkElement)details.Content, 640, 820, Path.Combine(directory, "details.png"));
+        Render((FrameworkElement)details.Content, 560, 600, Path.Combine(directory, "details.png"));
         capsule.Close(); details.ClosePermanently();
         File.WriteAllText(Path.Combine(directory, "result.txt"), $"PASS: {assertions} assertions; capsule and details rendered.");
         return 0;

@@ -4,11 +4,13 @@
 
 This fork is a .NET 8 / WPF tray application with a weekly quota HUD above the real Codex Pet. See the [main README](../../README.en.md) for usage instructions.
 
-v1.2.0 also supports an independent taskbar mode. `displayMode` is `pet` (backward-compatible default) or `taskbar`; `taskbarOffset` is a separate leftward DIP offset. `TaskbarHudHost` owns a child HWND inside the primary horizontal taskbar, matching its DPI context without injecting into Explorer or resizing the app-button area. Unsupported layouts retain the tray entry. Windows 10 native placement was tested; Windows 11, Explorer restart and auto-hide need additional validation on target desktops.
+v1.2.0 also supports an independent taskbar mode. `displayMode` is `pet` (backward-compatible default) or `taskbar`; `taskbarOffset` is a separate leftward DIP offset. `TaskbarHudHost` owns a layered child HWND inside the primary horizontal taskbar, matching its DPI context without injecting into Explorer or resizing the app-button area. `UsesPerPixelTransparency` and the Windows 10/11 `supportedOS` manifest declaration prevent the Windows 11 composition surface from covering the HUD. Unsupported layouts retain the tray entry. This fix was verified on Windows 11 26H2 build 26300.9711 at 100% scaling; Windows 10 was not retested. Other builds, scaling settings, Explorer restarts and auto-hide need additional validation on target desktops.
 
-Run `CodexWeeklyPetHud.exe --taskbar-self-test <output-directory>` on an interactive desktop to check real taskbar parenting, non-topmost style, native hit tests, notification-area bounds, hide/recreate, bilingual rendering and settings switching. The test uses sample data without reading account quota.
+Run `CodexWeeklyPetHud.exe --taskbar-self-test <output-directory>` on an interactive desktop to check real taskbar parenting, non-topmost style, native hit tests, notification-area bounds, hide/recreate, bilingual rendering and settings switching. The test uses sample data without reading account quota. Screen captures must match both the HUD's background and text against the WPF reference; a blank light taskbar no longer passes. Captures are saved on failure as well.
 
 ## Building and source installation
+
+Details use Overview, Plan & history and Manual import tabs, with Refresh quota outside the scroll area. Settings use General, Schedule and Appearance tabs; taskbar mode hides Pet appearance controls without discarding their values. Default sizes are 560 × 600 and 520 × 620. The language self-test visits every tab in both languages, saves `compact-details-*` and `compact-settings-*` captures, and checks footer visibility and settings persistence.
 
 Requires the .NET 8 SDK, Windows x64 and PowerShell. Run these commands from the repository root:
 

@@ -47,23 +47,25 @@ internal static class TaskbarSelfTest
                 using (var bitmap = new System.Drawing.Bitmap(bounds.Right - bounds.Left, bounds.Bottom - bounds.Top))
                 {
                     using var graphics = System.Drawing.Graphics.FromImage(bitmap);
-                    var brightPixels = 0;
+                    host.View.UpdateLayout();
+                    var expected = new RenderTargetBitmap(bitmap.Width, bitmap.Height,
+                        96 * bitmap.Width / host.View.ActualWidth, 96 * bitmap.Height / host.View.ActualHeight,
+                        PixelFormats.Pbgra32);
+                    expected.Render(host.View);
+                    var pixels = new byte[bitmap.Width * bitmap.Height * 4];
+                    expected.CopyPixels(pixels, bitmap.Width * 4, 0);
+                    var painted = false;
                     // Native compositing may trail WPF layout on the first HWND.
-                    // Validate actual on-screen text, not just a valid hit-test rectangle.
-                    for (var attempt = 0; attempt < 10 && brightPixels < 40; attempt++)
+                    // A light taskbar also has bright pixels. Match BOTH the HUD's
+                    // dark background and its glyph positions against WPF's rendering.
+                    for (var attempt = 0; attempt < 10 && !painted; attempt++)
                     {
                         await Task.Delay(200);
                         graphics.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bitmap.Size);
-                        brightPixels = 0;
-                        for (var y = 0; y < bitmap.Height; y++)
-                        for (var x = 0; x < bitmap.Width; x++)
-                        {
-                            var pixel = bitmap.GetPixel(x, y);
-                            if (pixel.R > 160 && pixel.G > 160 && pixel.B > 160) brightPixels++;
-                        }
+                        painted = MatchesHud(bitmap, pixels);
                     }
-                    Check(brightPixels >= 40, "Native text actually painted");
                     bitmap.Save(Path.Combine(directory, "taskbar-live." + language + ".png"));
+                    Check(painted, "Native HUD background and text actually painted (see taskbar-live capture)");
                 }
                 Render(host.View, Path.Combine(directory, "taskbar." + language + ".png"));
                 host.Hide(); Check(!host.IsVisible, "Shell flyout hide");
@@ -91,6 +93,23 @@ internal static class TaskbarSelfTest
         }
         catch (Exception error) { File.WriteAllText(Path.Combine(directory, "result.txt"), error.ToString()); return 1; }
         finally { settings.ClosePermanently(); UiText.SetLanguage(original); }
+    }
+
+    private static bool MatchesHud(System.Drawing.Bitmap actual, byte[] expected)
+    {
+        var dark = 0; var darkMatches = 0; var light = 0; var lightMatches = 0;
+        for (var y = 0; y < actual.Height; y++)
+        for (var x = 0; x < actual.Width; x++)
+        {
+            var i = (y * actual.Width + x) * 4;
+            if (expected[i + 3] < 250) continue; // Rounded transparent corners.
+            var b = expected[i]; var g = expected[i + 1]; var r = expected[i + 2];
+            var pixel = actual.GetPixel(x, y);
+            var matches = Math.Abs(pixel.R - r) <= 45 && Math.Abs(pixel.G - g) <= 45 && Math.Abs(pixel.B - b) <= 45;
+            if (r < 80 && g < 80 && b < 80) { dark++; if (matches) darkMatches++; }
+            if (r > 160 && g > 160 && b > 160) { light++; if (matches) lightMatches++; }
+        }
+        return dark >= 100 && light >= 40 && darkMatches >= dark * 0.9 && lightMatches >= light * 0.7;
     }
 
     private static void Render(FrameworkElement view, string path)

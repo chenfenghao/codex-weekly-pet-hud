@@ -77,7 +77,7 @@ internal static class VisualQuotaSelfTest
             var details=new UsageDetailsWindow { PacingSettings=settings, History=observations };
             details.ApplyLanguage();details.Update(new UsageSnapshot(null,52,null,sampleReset,"live",sampleNow),false);
             var detailContent=(FrameworkElement)details.Content; details.Content=null;
-            Render(detailContent,640,820,Path.Combine(directory,$"visual-details.{language}.png"));
+            Render(detailContent,560,600,Path.Combine(directory,$"visual-details.{language}.png"));
             details.ClosePermanently();
         }
         UiText.SetLanguage(original);

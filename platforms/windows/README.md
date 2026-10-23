@@ -48,6 +48,8 @@ v1.0.0 本机验证覆盖：1120 个布局案例、174 个节奏/粘贴/界面�
 
 ## 代码位置
 
+详情使用三个页签，刷新按钮固定在内容滚动区之外；雷达和更多指标可以展开。设置按常用、作息、外观分组，任务栏模式隐藏宠物外观页签，切换回来保留原设置。窗口默认大小分别为 560 × 600 和 520 × 620。`--language-self-test` 会遍历中英文的每个页签，生成 `compact-details-*` 和 `compact-settings-*` 截图，并检查刷新入口可见及设置保存行为。
+
 中英文文案集中在 `UiText.cs`，静态 XAML 使用 `{local:Tr '中文原文'}` 绑定，格式化提示使用 `UiText.F`。内部状态和通知事件标识不随语言变化。`language` 设置保存为 `zh-CN` 或 `en`，旧配置默认中文。「恢复默认」保留语言选择。
 
 | 文件 | 职责 |
@@ -65,6 +67,10 @@ Codex 的状态格式、窗口结构和用量接口可能变化。当前仅验�
 
 ## 任务栏模式（v1.2.0）
 
-`displayMode` 为 `pet`（默认，兼容旧配置）或 `taskbar`；`taskbarOffset` 为任务栏内向左移动的 DIP 距离，独立于宠物偏移。`TaskbarHudHost` 创建属于本进程的 `HwndSource` 子窗口并挂到主任务栏，按父窗口 DPI 计算位置，不向 Explorer 注入代码、不缩小任务列表或修改系统设置。模式切换销毁旧的任务栏子窗口、隐藏宠物输入代理，并保留数据、刷新间隔和语言。
+`displayMode` 为 `pet`（默认，兼容旧配置）或 `taskbar`；`taskbarOffset` 为任务栏内向左移动的 DIP 距离，独立于宠物偏移。`TaskbarHudHost` 创建属于本进程的 `HwndSource` 分层子窗口并挂到主任务栏，按父窗口 DPI 计算位置，不向 Explorer 注入代码、不缩小任务列表或修改系统设置。模式切换销毁旧的任务栏子窗口、隐藏宠物输入代理，并保留数据、刷新间隔和语言。
 
-在交互式 Windows 桌面运行 `CodexWeeklyPetHud.exe --taskbar-self-test <输出目录>`，检查真实父窗口、非置顶样式、点击命中、通知区域避让、位置调整、隐藏/重建、中英文渲染和设置切换。测试使用示例数据，不读取账户额度。当前原生检查在 Windows 10 通过；Windows 11、Explorer 重启和自动隐藏行为应在各目标桌面补充手工验证。主任务栏竖向布局或无法定位通知区域时仅保留托盘入口。
+Windows 11 的 XAML/DirectComposition 任务栏可能遮盖普通 WPF 子窗口的绘制表面，即使 `IsWindowVisible` 和点击命中均正常。设置 `HwndSourceParameters.UsesPerPixelTransparency = true` 使 WPF 创建并更新分层子窗口；不要改用旧的 `UsesPerPixelOpacity`，后者对 `WS_CHILD` 不生效。`app.manifest` 同时声明 Windows 10/11 的 `supportedOS`，否则分层子窗口创建可能失败。不能只设置原生 `WS_EX_LAYERED` 而不切换 WPF 的绘制方式。
+
+在交互式 Windows 桌面运行 `CodexWeeklyPetHud.exe --taskbar-self-test <输出目录>`，检查真实父窗口、非置顶样式、点击命中、通知区域避让、位置调整、隐藏/重建、中英文渲染和设置切换。测试使用示例数据，不读取账户额度。实际屏幕截图同时匹配 WPF 参考图的深色背景和文字位置，避免浅色任务栏仅凭亮像素数量就误判通过；失败时也保留 `taskbar-live.*.png`。
+
+本次在 Windows 11 26H2（26300.9711、100% 缩放、主屏横向任务栏）复现旧版窗口可点击但文字不显示，修复后通过 38 项原生检查。其他 Windows 11 构建、缩放、Explorer 重启和自动隐藏行为仍需在各目标桌面补充验证；Windows 10 未在本次复测。主任务栏竖向布局或无法定位通知区域时仅保留托盘入口。

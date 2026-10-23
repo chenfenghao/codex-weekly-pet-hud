@@ -32,6 +32,9 @@ public partial class UsageDetailsWindow : Window
         var targets = WeeklyTargets.Calculate(usage.SecondaryReset, DateTimeOffset.Now, PacingSettings);
         var fresh = usage.Source is "live" or "manual";
         CloseBudgetText.Text = QuotaVisualModel.BudgetText(fresh ? usage.SecondaryRemaining : null, targets);
+        CloseBudgetText.Foreground = !fresh ? QuotaInk.Muted
+            : QuotaVisualModel.Available(usage.SecondaryRemaining, targets) is < 0
+                ? System.Windows.Media.Brushes.Khaki : QuotaInk.Green;
         Dashboard.Update(usage.SecondaryReset, DateTimeOffset.Now, PacingSettings ?? new(), History);
         EvenTargetText.Text = QuotaTargets.Percent(fresh ? targets.EvenRemaining : null);
         CloseTargetText.Text = QuotaTargets.Percent(fresh ? targets.CloseRemaining : null);
@@ -92,8 +95,8 @@ public partial class UsageDetailsWindow : Window
         if (_lastLanguage == UiText.Instance.Language) return;
         _lastLanguage = UiText.Instance.Language;
         MessageText.Text = "";
-        Width = Math.Min(640, SystemParameters.WorkArea.Width);
-        Height = Math.Min(820, SystemParameters.WorkArea.Height);
+        Width = Math.Min(560, SystemParameters.WorkArea.Width);
+        Height = Math.Min(600, SystemParameters.WorkArea.Height);
     }
     private void Window_OnClosing(object? sender, System.ComponentModel.CancelEventArgs e) { if (!_allowClose) { e.Cancel = true; Hide(); } }
 }

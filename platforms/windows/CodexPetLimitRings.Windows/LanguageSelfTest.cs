@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using CodexPetLimitRings.Windows.Services;
 using CodexPetLimitRings.Windows.Views;
 using ComboBox = System.Windows.Controls.ComboBox;
+using TabControl = System.Windows.Controls.TabControl;
 using FlowDirection = System.Windows.FlowDirection;
 
 namespace CodexPetLimitRings.Windows;
@@ -58,7 +59,7 @@ internal static class LanguageSelfTest
             Check(settings.Title == "Weekly quota · Settings", "Settings title binding");
             Check(details.Title == "Weekly quota · Pace companion", "Details title binding");
             Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "capsule.en.png"));
-            Render((FrameworkElement)details.Content, 640, 820, Path.Combine(directory, "details.en.png"));
+            Render((FrameworkElement)details.Content, 560, 600, Path.Combine(directory, "details.en.png"));
             Render((FrameworkElement)settings.Content, 520, 620, Path.Combine(directory, "settings.en.png"));
             foreach (var view in new FrameworkElement[] { (FrameworkElement)capsule.Content, (FrameworkElement)details.Content })
                 foreach (var text in TextBlocks(view))
@@ -111,6 +112,39 @@ internal static class LanguageSelfTest
             Check(DailySchedule.Get(dailySaved, dailyRow.Date, usage.SecondaryReset).StartMinute == 615, "Daily settings emit persistence event through SettingsWindow");
             Check(dailySaved.RefreshMinutes == 17 && dailySaved.Language == "en", "Daily setting keeps unrelated preferences");
             Render((FrameworkElement)settings.Content, 520, 900, Path.Combine(directory, "daily-settings.en.png"));
+            // Visit every tab in both languages, so hidden controls still receive
+            // visual QA and the compact footer remains reachable without scrolling.
+            settings.Height = 620;
+            var detailTabs = (TabControl)details.FindName("DetailsTabs");
+            var settingTabs = (TabControl)settings.FindName("SettingsTabs");
+            foreach (var locale in new[] { "zh-CN", "en" })
+            {
+                UiText.SetLanguage(locale);
+                details.ApplyLanguage(); details.Update(usage, false);
+                details.UpdateResetSignal(UiText.T("重置雷达 · 暂无新信号"), locale == "en" ? "Sample signal data" : "示例信号数据", false, false);
+                workSettings.Language = locale; settings.Apply(workSettings);
+                for (var tab = 0; tab < detailTabs.Items.Count; tab++)
+                {
+                    detailTabs.SelectedIndex = tab;
+                    await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                    Render((FrameworkElement)details.Content, 560, 600, Path.Combine(directory, $"compact-details-{tab}.{locale}.png"));
+                    var refresh = (System.Windows.Controls.Button)details.FindName("RefreshButton");
+                    var rect = refresh.TransformToAncestor((Visual)details.Content).TransformBounds(new Rect(refresh.RenderSize));
+                    Check(rect.Top >= 0 && rect.Bottom <= ((FrameworkElement)details.Content).ActualHeight && refresh.ActualWidth > 0, "Refresh stays in view on every details tab");
+                    if (locale == "en") foreach (var label in TextBlocks((FrameworkElement)details.Content))
+                        Check(English(label.Text), "English details tab label: " + label.Text);
+                }
+                for (var tab = 0; tab < settingTabs.Items.Count; tab++)
+                {
+                    settingTabs.SelectedIndex = tab;
+                    await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                    Render((FrameworkElement)settings.Content, 520, 620, Path.Combine(directory, $"compact-settings-{tab}.{locale}.png"));
+                }
+                settings.Apply(new OverlaySettings { Language = locale, DisplayMode = "taskbar" });
+                Check(settingTabs.SelectedIndex == 0 && ((TabItem)settings.FindName("PetAppearanceTab")).Visibility == Visibility.Collapsed, "Taskbar mode hides irrelevant Pet controls and returns to General");
+                await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+                Render((FrameworkElement)settings.Content, 520, 620, Path.Combine(directory, $"compact-settings-taskbar.{locale}.png"));
+            }
             File.WriteAllText(Path.Combine(directory, "result.txt"), $"PASS: {count} translation, formatting, live-switch, persistence, input and layout assertions.");
             return 0;
         }
@@ -128,6 +162,12 @@ internal static class LanguageSelfTest
         element.Measure(new System.Windows.Size(width, height));
         element.Arrange(new Rect(0, 0, width, height)); element.UpdateLayout();
         var bitmap = new RenderTargetBitmap((int)width, (int)height, 96, 96, PixelFormats.Pbgra32);
+        if (element is System.Windows.Controls.Panel { Background: { } background })
+        {
+            var backdrop = new DrawingVisual();
+            using (var drawing = backdrop.RenderOpen()) drawing.DrawRectangle(background, null, new Rect(0, 0, width, height));
+            bitmap.Render(backdrop);
+        }
         bitmap.Render(element);
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var stream = File.Create(path); encoder.Save(stream);

@@ -117,6 +117,8 @@ public partial class SettingsWindow : Window
         var invalid = target.EvenRemaining is not null && target.CloseRemaining is null;
         WorkHoursSummary.Text = UiText.T(invalid ? "请选择工作日和不同的起止时间；无有效时段时暂停预测。" : "始终同时显示匀速与下班两个目标。上方选项仅切换速率和预算算法；工作日与时间决定下班目标。");
         TaskbarOptions.Visibility = taskbar ? Visibility.Visible : Visibility.Collapsed;
+        if (taskbar && PetAppearanceTab.IsSelected) SettingsTabs.SelectedItem = GeneralTab;
+        PetAppearanceTab.Visibility = taskbar ? Visibility.Collapsed : Visibility.Visible;
         Alignment.IsEnabled = HorizontalOffset.IsEnabled = VerticalOffset.IsEnabled = Scale.IsEnabled = PotionGap.IsEnabled = !taskbar;
         TaskbarOffsetValue.Text = $"{TaskbarOffset.Value:0}px";
         RefreshMinutesValue.Text = UiText.F("每 {0:0} 分钟", RefreshMinutes.Value);

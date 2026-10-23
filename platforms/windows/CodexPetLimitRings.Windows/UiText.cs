@@ -25,6 +25,14 @@ public sealed class UiText : INotifyPropertyChanged
     internal static IReadOnlyDictionary<string, string> Translations => English;
     private static readonly Dictionary<string, string> English = new()
     {
+        ["概览"] = "Overview",
+        ["计划与走势"] = "Plan & history",
+        ["手动导入"] = "Manual import",
+        ["更多指标"] = "More metrics",
+        ["常用"] = "General",
+        ["作息"] = "Schedule",
+        ["外观"] = "Appearance",
+        ["粘贴重置时间和剩余额度，即可导入。手动导入后暂停自动覆盖；点击底部按钮恢复自动读取。"] = "Paste the reset time and remaining quota to import. Manual import pauses automatic updates; use the button below to resume them.",
         ["更多设置（默认作息 / 午休）"] = "More settings (default hours / break)",
         ["默认作息用于以后周期；修改这里不会覆盖已经设置的本周期。"] = "Default hours apply to future cycles. They do not overwrite the cycle you have already edited.",
         ["点击星期切换，拖动圆点调整统一作息；也可使用下方控件。"] = "Click weekdays or drag handles to edit shared work hours. The controls below also work.",

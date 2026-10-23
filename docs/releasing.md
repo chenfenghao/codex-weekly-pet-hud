@@ -1,4 +1,26 @@
-# Release handbook
+# Weekly HUD release handbook
+
+This fork publishes **Windows x64 only**, using `scripts/release/package-weekly.ps1`. The upstream multi-platform process below is retained for reference; `publish-release.ps1` and `verify-release.sh` target the upstream project and are not the release commands for this fork.
+
+## Windows x64 release flow
+
+1. Update the project version, the packaging default and the Windows workflow tag together. Add a dated changelog section and update both root READMEs, download examples and sample screenshots.
+2. Build and run the layout tests plus the packaged executable's reset, pacing and bilingual UI self-tests. Validate taskbar rendering on an interactive Windows desktop; record the actual OS build and scaling in the release notes.
+3. Run the tracked-source secret scan and review the diff. Commit the intended changes, push `main` and wait for the Windows build workflow to pass.
+4. From that clean commit, run `pwsh -NoProfile -File scripts/release/package-weekly.ps1 -Tag vX.Y.Z`. Check that the ZIP contains only the executable, runtime libraries, documentation, sample images and licenses. Confirm its SHA-256 matches `dist/SHA256SUMS.txt`.
+5. Create and push an annotated version tag at the tested commit. Create a draft GitHub Release with the ZIP and `SHA256SUMS.txt`, verify both uploads, then publish it as the latest release. Use a UTF-8 notes file with `gh release create --notes-file`; include Chinese and English changes, validation limits and upgrade instructions.
+6. Read back the public latest release, tagged commit and exact two-asset set. Verify the published ZIP digest and checksum file before considering the release complete.
+
+The website discovers the latest release dynamically. No version-specific website rebuild is needed. Windows builds remain unsigned; retain that information in the download documentation.
+
+Expected assets:
+
+```text
+Codex-Weekly-Pet-HUD-vX.Y.Z-Windows-x64.zip
+SHA256SUMS.txt
+```
+
+## Upstream reference (not used by this fork)
 
 Codex Pet HUD publishes unsigned preview builds from version tags. The tag is the single version source for both native apps.
 

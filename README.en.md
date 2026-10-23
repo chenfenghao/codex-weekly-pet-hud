@@ -6,7 +6,11 @@
 
 A compact Windows status bar **above your Codex Pet**. Track your remaining weekly quota, see whether your usage is on pace, and receive community reset alerts.
 
-**v1.6.0: simple daily settings.** Settings → Quota pacing lists actual dates in reset-cycle order, without a fixed Sunday/Monday start. Each row has the date, Work/Off, start/end times and Copy. Select or type a time; edits save automatically.
+**Compact interface in v1.6.2:** details now use a 560 × 600 window with Overview, Plan & history, and Manual import tabs. The overview keeps quota, targets and reset time visible; radar details and extra metrics expand on demand, and Refresh quota stays in the footer. Settings use a 520 × 620 window with General, Schedule and Appearance tabs. Taskbar mode hides Pet appearance controls. Quota calculations, schedule editing, history, notifications, languages and both display modes are preserved.
+
+<p><img src="docs/images/overview.en.png" alt="Compact overview with sample data" width="280"> <img src="docs/images/settings.en.png" alt="Compact settings with sample data" width="260"></p>
+
+**v1.6.0: simple daily settings.** Settings → Schedule lists actual dates in reset-cycle order, without a fixed Sunday/Monday start. Each row has the date, Work/Off, start/end times and Copy. Select or type a time; edits save automatically.
 
 - Existing hours are prefilled. Edit only exceptions; today is highlighted.
 - Copy applies that row's times to other workdays from today onward, preserving days off and past dates.
@@ -32,7 +36,7 @@ History starts with successful reads or imports after upgrading. Local `quota-hi
 - **Even (now) = wall-clock time until reset / seven days × 100%**, changing continuously.
 - **Close = work hours after today's shift ends until reset / total work hours in the cycle × 100%**. This is the planned balance at shift end, fixed throughout the day. Neither target depends on actual quota spending.
 
-Set weekdays, shift times and an optional break in Settings → Quota pacing (15-minute precision). Monday–Saturday 07:00–21:00 without breaks totals 84 hours. If reset precedes shift end, Close uses that reset deadline and shows 0%. Days off display **Off**. An earlier end time crosses midnight; select the weekday on which the shift starts. An active overnight shift retains its closing target across midnight.
+Set weekdays, shift times and an optional break in Settings → Schedule (15-minute precision). Monday–Saturday 07:00–21:00 without breaks totals 84 hours. If reset precedes shift end, Close uses that reset deadline and shows 0%. Days off display **Off**. An earlier end time crosses midnight; select the weekday on which the shift starts. An active overnight shift retains its closing target across midnight.
 
 **Use working hours for pace and budget** only changes pace, exhaustion estimates and budget calculations; both targets remain visible. Working-hours mode skips nights, days off and breaks. In details, **Today's budget = actual remaining quota × work hours left today / work hours left in the cycle**. Today ends at midnight; the budget is zero after work. With this option disabled, pace uses wall-clock time and the budget is spread across remaining days. Upgrades retain existing settings.
 
@@ -44,7 +48,9 @@ Calculations use local time and the fixed seven-day window before reset, clippin
 
 The widget starts in free space left of the primary taskbar's notification area. Click for details, right-click for Settings; a gold dot marks reset radar attention. Use **Move left** to adjust its position independently of the Pet. Quota updates continue with Pet closed or the taskbar auto-hidden. Switch back to **Follow Codex Pet** anytime.
 
-Only the primary horizontal taskbar is supported; widget size follows taskbar height. The widget does not reserve space or push app icons aside. On crowded taskbars, move it to a free area or use Pet mode. Unsupported/vertical layouts hide the widget and retain the tray menu. Native taskbar tests were run on Windows 10; Windows 11 needs separate desktop validation.
+Only the primary horizontal taskbar is supported; widget size follows taskbar height. The widget does not reserve space or push app icons aside. On crowded taskbars, move it to a free area or use Pet mode. Unsupported/vertical layouts hide the widget and retain the tray menu.
+
+**Windows 11 rendering fix in v1.6.2:** use a layered WPF child window and Windows 10/11 manifest compatibility so the taskbar's composition surface does not cover the HUD. Native rendering, hit tests, offsets and hide/recreate passed on Windows 11 26H2 build 26300.9711 at 100% scaling. Other builds, scaling settings, Explorer restarts and auto-hide need separate validation. Windows 10 was not retested for this fix.
 
 [Download Windows x64](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) · [Windows development guide](platforms/windows/README.en.md) · [Changelog](CHANGELOG.md) · [MIT License](LICENSE)
 
@@ -71,7 +77,7 @@ Only the primary horizontal taskbar is supported; widget size follows taskbar he
 
 ## Download and run
 
-1. Download `Codex-Weekly-Pet-HUD-v1.6.0-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
+1. Download `Codex-Weekly-Pet-HUD-v1.6.2-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
 2. **Extract the entire archive** to a permanent folder. Keep the DLL files beside the executable.
 3. Run `CodexWeeklyPetHud.exe`, then open Pet in Codex or select Taskbar mode from the tray Settings menu.
 4. Click the status bar, then **设置 (Settings)**. Under **语言 / Language**, choose **English**.
@@ -83,7 +89,7 @@ Requires Windows 10/11 x64 and a signed-in Codex desktop app (Pet support is onl
 To upgrade, exit the previous version through its tray menu before extracting the new version. Settings are stored outside the application folder and survive replacement. To uninstall a portable copy, exit it and delete its extracted folder.
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.6.0-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.6.2-Windows-x64.zip -Algorithm SHA256
 ```
 
 Compare the result with `SHA256SUMS.txt` from the same release.
@@ -111,7 +117,7 @@ Calculations assume a fixed **seven-day window**. Quotas that recover incrementa
 
 ## Paste import
 
-Open the details panel and use **Clipboard**, or paste into the input box:
+Open the details panel's **Manual import** tab and use **Clipboard**, or paste into the input box:
 
 ```text
 Reset time: 2026-09-19 16:12
@@ -173,7 +179,7 @@ Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and 
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.6.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.6.2
 ```
 
 The portable ZIP and SHA-256 file are written to `dist`. Packaging reads only build output and project documentation, not your user data directory. To publish the executable directly:
