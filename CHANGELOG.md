@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+## [1.6.3] - 2026-10-29 · Dual rings, visible quota and light violet UI
+
+- Replace the Pet capsule and taskbar strip with dual rings and two always-visible numeric values: outer / top for remaining, inner / bottom for headroom until close. No text labels inside the widget.
+- Use 100 × 40 DIP beside Pet and approximately 90 × 36 DIP in the taskbar, retaining dragging, offset, click/right-click behavior and Windows 11 layered rendering.
+- Keep headroom tied to the original closing target and schedule. Deficits appear as negative numbers with an empty inner arc; stale readings use ≈ and no current budget; unavailable readings use — instead of zero.
+- Match the requested palette across windows, charts and tooltips: #EFF1F5 background, #4C4F69 text and #8839EF accent. Keep the centered diamond, radar dot, accessible tooltips and translated details.
+- Preserve settings, schedules, quota calculations, history, imports and notifications. Add numeric/inner-ring checks and update screenshots, website examples and download instructions.
+
 ## [1.6.2] - 2026-10-23 · Windows 11 taskbar fix and compact interface
 
 ### Changed
@@ -80,7 +90,7 @@ Earlier entries below describe the upstream project; macOS and potion UI feature
 
 All notable changes to Codex Pet HUD are documented here. This project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## Upstream planned work
 
 ### Planned
 
@@ -209,7 +219,8 @@ All notable changes to Codex Pet HUD are documented here. This project follows [
 - Access tokens remain in memory and are never copied to settings or logs
 - Release archives are checked for forbidden private files and include SHA-256 checksums
 
-[Unreleased]: https://github.com/chenfenghao/codex-weekly-pet-hud/compare/v1.6.2...HEAD
+[Unreleased]: https://github.com/chenfenghao/codex-weekly-pet-hud/compare/v1.6.3...HEAD
+[1.6.3]: https://github.com/chenfenghao/codex-weekly-pet-hud/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/chenfenghao/codex-weekly-pet-hud/compare/v1.6.0...v1.6.2
 [0.1.10]: https://github.com/himomohi/codex-pet-hud/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/himomohi/codex-pet-hud/compare/v0.1.8...v0.1.9

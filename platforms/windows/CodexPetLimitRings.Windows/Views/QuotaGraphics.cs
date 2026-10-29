@@ -6,7 +6,6 @@ using System.Windows.Media;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using Point = System.Windows.Point;
-using Color = System.Windows.Media.Color;
 using Pen = System.Windows.Media.Pen;
 using FlowDirection = System.Windows.FlowDirection;
 
@@ -14,8 +13,7 @@ namespace CodexPetLimitRings.Windows.Views;
 
 internal static class QuotaInk
 {
-    internal static Brush Color(string hex) => (Brush)new BrushConverter().ConvertFromString(hex)!;
-    internal static readonly Brush Text = Color("#DFEAE3"), Muted = Color("#95ADA0"), Blue = Color("#81BEF9"), Green = Color("#9BDFB5"), Track = Color("#2B3B32");
+    internal static readonly Brush Text = HudTheme.Text, Muted = HudTheme.Muted, Blue = HudTheme.ChartBlue, Green = HudTheme.ChartGreen, Track = HudTheme.Track;
     internal static string L(string zh, string en) => UiText.IsEnglish ? en : zh;
     internal static void Label(DrawingContext dc, string text, double x, double y, double size = 11, Brush? brush = null, double max = 1000)
     {
@@ -45,7 +43,7 @@ public sealed class QuotaGauge : FrameworkElement
         dc.DrawRoundedRectangle(QuotaInk.Track, null, new Rect(3, y - 2, width, 4), 2, 2);
         Brush fill = QuotaInk.Muted;
         if (_fresh && _balance is { } b && _targets.EvenRemaining is { } e && _targets.CloseRemaining is { } c)
-            fill = b >= Math.Max(e,c) ? QuotaInk.Green : b < Math.Min(e,c) ? QuotaInk.Color("#F29A9A") : QuotaInk.Color("#EDCB85");
+            fill = b >= Math.Max(e,c) ? QuotaInk.Green : b < Math.Min(e,c) ? HudTheme.Danger : HudTheme.Warning;
         if (_balance is { } balance)
         {
             var x = 3 + width * Math.Clamp(balance, 0, 100) / 100;
@@ -54,7 +52,7 @@ public sealed class QuotaGauge : FrameworkElement
         }
         if (!_fresh) return;
         // Opposite tick directions keep coincident targets distinguishable.
-        if (_targets.EvenRemaining is { } even) { var x = 3 + width * even / 100; dc.DrawLine(new Pen(Brushes.WhiteSmoke, 2), new Point(x,y-6),new Point(x,y+1)); }
+        if (_targets.EvenRemaining is { } even) { var x = 3 + width * even / 100; dc.DrawLine(new Pen(HudTheme.Muted, 2), new Point(x,y-6),new Point(x,y+1)); }
         if (_targets.CloseRemaining is { } close) { var x = 3 + width * close / 100; dc.DrawLine(new Pen(QuotaInk.Blue, 2),new Point(x,y-1),new Point(x,y+6)); }
     }
 }
@@ -101,7 +99,7 @@ public sealed class QuotaDashboard : FrameworkElement
     }
     protected override void OnRender(DrawingContext dc)
     {
-        dc.DrawRoundedRectangle(QuotaInk.Color("#18251E"),null,new Rect(0,0,ActualWidth,ActualHeight),10,10);
+        dc.DrawRoundedRectangle(HudTheme.Card,null,new Rect(0,0,ActualWidth,ActualHeight),10,10);
         if (_plan is null) { QuotaInk.Label(dc,QuotaInk.L("等待有效重置时间后显示本周期分配", "A valid reset time is needed to show the plan"),12,20,12,max:ActualWidth-24); return; }
         var plan = _plan;
         QuotaInk.Label(dc,QuotaInk.L("本周期 · 计划分配", "This cycle · Planned allocation"),12,8,12);
@@ -110,8 +108,8 @@ public sealed class QuotaDashboard : FrameworkElement
         for (var i=0;i<plan.Days.Count;i++)
         {
             var d=plan.Days[i]; var x=i*cell+4; var w=cell-8; var today=d.Date==_now.LocalDateTime.Date;
-            dc.DrawRoundedRectangle(QuotaInk.Color(today ? "#294738" : "#1D2D24"), today ? new Pen(QuotaInk.Green,1) : null,new Rect(x,32,w,122),6,6);
-            QuotaInk.Label(dc,d.Date.ToString(UiText.IsEnglish ? "ddd" : "ddd",UiText.Culture),x+5,38,10,today?QuotaInk.Green:QuotaInk.Muted,w-10);
+            dc.DrawRoundedRectangle((today ? HudTheme.Selected : HudTheme.Inset), today ? new Pen(HudTheme.Focus,1) : null,new Rect(x,32,w,122),6,6);
+            QuotaInk.Label(dc,d.Date.ToString(UiText.IsEnglish ? "ddd" : "ddd",UiText.Culture),x+5,38,10,today?QuotaInk.Text:QuotaInk.Muted,w-10);
             QuotaInk.Label(dc,d.Date.ToString("M/d"),x+5,53,11,max:w-10);
             var height=(d.Allocation??0)/max*30;
             dc.DrawRoundedRectangle(d.Hours>0?QuotaInk.Blue:QuotaInk.Track,null,new Rect(x+7,100-height,w-14,Math.Max(2,height)),2,2);
@@ -135,9 +133,9 @@ public sealed class QuotaDashboard : FrameworkElement
         {
             var p=points[i]; var location=new Point(X(p.At),Y(p.Remaining));
             if(i>0 && QuotaHistory.Connect(points[i-1],p,_gap)) dc.DrawLine(new Pen(QuotaInk.Green,2),new(X(points[i-1].At),Y(points[i-1].Remaining)),location);
-            dc.DrawEllipse(p.Source=="manual"?QuotaInk.Color("#18251E"):QuotaInk.Green,new Pen(QuotaInk.Green,1),location,p.Source=="manual"?3:1.5,p.Source=="manual"?3:1.5);
+            dc.DrawEllipse(p.Source=="manual"?HudTheme.Card:QuotaInk.Green,new Pen(QuotaInk.Green,1),location,p.Source=="manual"?3:1.5,p.Source=="manual"?3:1.5);
         }
-        dc.DrawLine(new Pen(Brushes.WhiteSmoke,1){DashStyle=DashStyles.Dot},new(X(_now),top),new(X(_now),bottom));
+        dc.DrawLine(new Pen(HudTheme.Muted,1){DashStyle=DashStyles.Dot},new(X(_now),top),new(X(_now),bottom));
         if(_targets.Deadline is {} end) dc.DrawLine(new Pen(QuotaInk.Blue,1){DashStyle=DashStyles.Dot},new(X(end),top),new(X(end),bottom));
         dc.Pop();
         QuotaInk.Label(dc,QuotaInk.L("现在", "Now"),Math.Clamp(X(_now)-12,left,right-36),226,9);
@@ -160,25 +158,25 @@ public sealed class WorkScheduleEditor : FrameworkElement
     {
         var width=Math.Max(1,ActualWidth-62);
         dc.DrawRectangle(Brushes.Transparent,null,new Rect(0,0,ActualWidth,ActualHeight));
-        foreach(var h in new[]{0,6,12,18,24}) QuotaInk.Label(dc,$"{h:00}",48+width*h/24-5,0,10,QuotaInk.Color("#657C70"));
+        foreach(var h in new[]{0,6,12,18,24}) QuotaInk.Label(dc,$"{h:00}",48+width*h/24-5,0,10,HudTheme.Muted);
         // Drawing a representative week also shows the previous night's continuation.
         var monday=new DateTime(2026,9,14); var zone=TimeZoneInfo.Local;
         var intervals=WorkSchedule.Build(WorkSchedule.Instant(monday,zone,false),WorkSchedule.Instant(monday.AddDays(7),zone,false),_settings,zone);
         for(var i=0;i<7;i++)
         {
             var day=(i+1)%7; var y=29+i*27; var selected=_settings.WorkDays.Contains(day); var date=monday.AddDays(i);
-            QuotaInk.Label(dc,UiText.T(new[]{"周日","周一","周二","周三","周四","周五","周六"}[day]),0,y-7,11,QuotaInk.Color(selected?"#254F39":"#7A8780"),45);
-            dc.DrawRoundedRectangle(QuotaInk.Color("#E6EDE8"),null,new Rect(48,y-5,width,10),4,4);
+            QuotaInk.Label(dc,UiText.T(new[]{"周日","周一","周二","周三","周四","周五","周六"}[day]),0,y-7,11,(selected ? HudTheme.Text : HudTheme.Muted),45);
+            dc.DrawRoundedRectangle(HudTheme.Track,null,new Rect(48,y-5,width,10),4,4);
             foreach(var w in intervals)
             {
                 var a=w.Start.LocalDateTime<date?date:w.Start.LocalDateTime; var b=w.End.LocalDateTime>date.AddDays(1)?date.AddDays(1):w.End.LocalDateTime;
                 if(b<=a)continue;
-                dc.DrawRoundedRectangle(QuotaInk.Color("#71AF8B"),null,new Rect(48+width*(a-date).TotalMinutes/1440,y-5,width*(b-a).TotalMinutes/1440,10),3,3);
+                dc.DrawRoundedRectangle(HudTheme.Accent,null,new Rect(48+width*(a-date).TotalMinutes/1440,y-5,width*(b-a).TotalMinutes/1440,10),3,3);
             }
             if(selected)
             {
                 foreach(var minute in new[]{_settings.WorkStartMinute,_settings.WorkEndMinute})
-                    dc.DrawEllipse(Brushes.White,new Pen(QuotaInk.Color("#315F46"),2),new Point(48+width*minute/1440,y),4,7);
+                    dc.DrawEllipse(HudTheme.Card,new Pen(HudTheme.Accent,2),new Point(48+width*minute/1440,y),4,7);
             }
         }
         ToolTip=QuotaInk.L("点击星期切换工作日；拖动圆点调整所有工作日的统一上下班时间。跨夜下班点表示次日时间。", "Click a weekday to toggle it. Drag handles to change shared shift times. Overnight end handles refer to the next day.");

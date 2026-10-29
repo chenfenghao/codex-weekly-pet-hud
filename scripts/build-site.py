@@ -16,11 +16,11 @@ COPY = {
         'heading': 'Codex 周额度，<br><span>一眼看清节奏。</span>',
         'intro': '剩下多少，应该用多快。把周额度、使用节奏和重置信号放在你的 Codex Pet 上方，专心做事，也心里有数。',
         'download': '下载 Windows x64', 'source': '查看源码 ↗', 'release': '从 GitHub 获取最新稳定版',
-        'figure': '真实界面 · 示例数据', 'pet': '跟随你现有的 Codex Pet', 'caption': '剩余额度 / 目标刻度 / 今日余量 / 重置雷达',
-        'stats': [('190 × 72', '默认尺寸 · 可缩放'), ('1–60 min', '更新间隔 · 默认 5 分钟'), ('中文 / EN', '界面语言 · 随时切换')],
+        'figure': '真实界面 · 示例数据', 'pet': '跟随你现有的 Codex Pet', 'caption': '外圈 / 上方：剩余 · 内圈 / 下方：下班可用',
+        'stats': [('100 × 40', '宠物挂件 · 任务栏 90 × 36'), ('1–60 min', '更新间隔 · 默认 5 分钟'), ('中文 / EN', '界面语言 · 随时切换')],
         'featureTitle': '需要的信息，刚好够用。',
         'features': [
-            ('01', '看懂使用节奏', '余额条显示匀速与下班目标，展开查看每天的计划分配和实际余额走势。按重置周期逐日设置工作与休息，只改当天时间即可自动保存，还能一键复制给后续工作日。'),
+            ('01', '看懂使用节奏', '双层圆环与纯数字直接显示剩余和下班可用，悬停查看目标，展开查看计划分配和余额走势。按重置周期逐日设置工作与休息，只改当天时间即可自动保存，还能一键复制给后续工作日。'),
             ('02', '重置信号到来时提醒', '从 codex-reset.com 读取公开社区信号。新强信号或重置公告高亮并可通知；历史公告静默，同一状态不重复提醒。'),
             ('03', '跟随宠物，也会让路', '默认跟随宠物，也可在设置中切换到任务栏独立显示，无需打开 Pet。两种模式均在受支持的系统面板打开时暂时隐藏。'),
         ],
@@ -29,7 +29,7 @@ COPY = {
         'paceLabels': ['偏慢', '稳健', '偏快', '超速'], 'paceNote': '按固定 7 天窗口估算；工作时段模式仅累计计划工作时间，今日建议按今天剩余工作时长分配。到达重置时间后等待真实数据。',
         'setupTitle': '解压，打开，就位。',
         'steps': [('完整解压下载包', '运行 CodexWeeklyPetHud.exe，保留旁边的 DLL 文件；无需单独安装 .NET。'), ('选择宠物或任务栏模式', '默认跟随 Codex Pet；也可从系统托盘进入设置，切换为任务栏显示。单击状态条查看详情。'), ('选好语言与输入方式', '设置 → 语言 / Language 切换中英文。自动读取不可用时，可以粘贴重置时间和剩余百分比。')],
-        'manual': '阅读完整中文说明 ↗', 'downloadTitle': '给 Pet 加一条状态栏。',
+        'manual': '阅读完整中文说明 ↗', 'downloadTitle': '额度与下班余量，直接可见。',
         'downloadBody': 'Windows 10/11 x64 · .NET 8 运行时已包含 · 便携版不注册开机启动',
         'checksum': 'SHA-256 校验文件 ↗', 'changes': '版本记录 ↗',
         'unsigned': '当前构建未签名，Windows 可能提示未知发布者。升级前先从托盘退出旧版，并核对同一 Release 的 SHA256SUMS.txt。',
@@ -47,11 +47,11 @@ COPY = {
         'heading': 'Your Codex quota,<br><span>at a glance.</span>',
         'intro': 'Know what is left and how fast to use it. Keep weekly quota, usage pace and reset signals above your existing Codex Pet, so you can focus on the work.',
         'download': 'Download Windows x64', 'source': 'View source ↗', 'release': 'Get the latest stable build on GitHub',
-        'figure': 'Real interface · Sample data', 'pet': 'Follows your existing Codex Pet', 'caption': 'Quota left / Target markers / Today’s headroom / Reset radar',
-        'stats': [('190 × 72', 'Default size · Adjustable scale'), ('1–60 min', 'Refresh interval · 5 by default'), ('中文 / EN', 'Switch language anytime')],
+        'figure': 'Real interface · Sample data', 'pet': 'Follows your existing Codex Pet', 'caption': 'Outer / top: remaining · Inner / bottom: until close',
+        'stats': [('100 × 40', 'Pet size · Taskbar 90 × 36'), ('1–60 min', 'Refresh interval · 5 by default'), ('中文 / EN', 'Switch language anytime')],
         'featureTitle': 'The information you need. Just enough.',
         'features': [
-            ('01', 'Understand your pace', 'Compare balance with even-use and closing targets. Open daily allocation cards and balance history; set each date’s work hours in reset-cycle order, with automatic saving and one-click copying to remaining workdays.'),
+            ('01', 'Understand your pace', 'Read remaining quota and closing headroom directly from dual rings and numbers; hover for targets. Open daily allocation cards and balance history; set each date’s work hours in reset-cycle order, with automatic saving and one-click copying to remaining workdays.'),
             ('02', 'Hear about reset signals', 'Reads public community signals from codex-reset.com. New strong signals and reset announcements can alert you. History syncs silently; repeated states do not notify again.'),
             ('03', 'Follows your Pet. Makes room.', 'Follow your Pet, or choose Taskbar mode in Settings for an independent display with Pet closed. Both modes temporarily hide during supported system flyouts.'),
         ],
@@ -60,7 +60,7 @@ COPY = {
         'paceLabels': ['Slow', 'On track', 'Fast', 'Too fast'], 'paceNote': 'Uses a fixed seven-day window. Working-hours mode counts scheduled work and budgets for the work left today. Reaching reset does not automatically refill quota.',
         'setupTitle': 'Extract. Open. You are set.',
         'steps': [('Extract the entire archive', 'Run CodexWeeklyPetHud.exe and keep its DLL files alongside it. No separate .NET installation is needed.'), ('Choose Pet or Taskbar mode', 'Follow your Codex Pet by default, or choose Taskbar mode in Settings from the tray. Click the HUD for details.'), ('Choose your language and input', 'Use 设置 → 语言 / Language → English. If automatic quota reads fail, paste a reset time and remaining percentage instead.')],
-        'manual': 'Read the full English guide ↗', 'downloadTitle': 'Give your Pet a status bar.',
+        'manual': 'Read the full English guide ↗', 'downloadTitle': 'Quota and closing headroom, always visible.',
         'downloadBody': 'Windows 10/11 x64 · .NET 8 runtime included · No automatic startup registration',
         'checksum': 'SHA-256 checksums ↗', 'changes': 'Release notes ↗',
         'unsigned': 'This build is unsigned; Windows may show an unknown-publisher prompt. Exit the old version before upgrading and verify against SHA256SUMS.txt from the same release.',
@@ -94,7 +94,7 @@ def render(language):
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101612">
+  <meta name="theme-color" content="#EFF1F5">
   <title>{esc(c['title'])}</title>
   <meta name="description" content="{esc(c['description'])}">
   <meta name="robots" content="index, follow">
@@ -129,7 +129,7 @@ def render(language):
         <div class="actions"><a class="button primary" data-download href="{REPO}/releases/latest">{c['download']} <span aria-hidden="true">↓</span></a><a class="text-link" href="{REPO}">{c['source']}</a></div>
         <p class="release-status" data-release-status aria-live="polite">{c['release']}</p>
       </div>
-      <figure class="preview"><figcaption><span class="preview-dot"></span>{c['figure']}</figcaption><div class="preview-inner"><img src="{prefix}assets/images/{image}" width="380" height="144" alt="{esc(c['caption'])}"><div class="tether"></div><div class="pet-label">{esc(c['pet'])}</div></div><p class="preview-caption">{esc(c['caption'])}</p></figure>
+      <figure class="preview"><figcaption><span class="preview-dot"></span>{c['figure']}</figcaption><div class="preview-inner"><img src="{prefix}assets/images/{image}" width="200" height="80" alt="{esc(c['caption'])}"><div class="tether"></div><div class="pet-label">{esc(c['pet'])}</div></div><p class="preview-caption">{esc(c['caption'])}</p></figure>
     </section>
     <div class="stats wrap">{stats}</div>
     <section class="section wrap" id="features"><p class="eyebrow">01 / FEATURES</p><h2>{esc(c['featureTitle'])}</h2><div class="features">{cards}</div></section>

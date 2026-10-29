@@ -1,6 +1,4 @@
 using System.Windows;
-using System.Windows.Media;
-using System.Globalization;
 
 namespace CodexPetLimitRings.Windows.Views;
 
@@ -34,7 +32,7 @@ public partial class UsageDetailsWindow : Window
         CloseBudgetText.Text = QuotaVisualModel.BudgetText(fresh ? usage.SecondaryRemaining : null, targets);
         CloseBudgetText.Foreground = !fresh ? QuotaInk.Muted
             : QuotaVisualModel.Available(usage.SecondaryRemaining, targets) is < 0
-                ? System.Windows.Media.Brushes.Khaki : QuotaInk.Green;
+                ? HudTheme.Warning : HudTheme.Text;
         Dashboard.Update(usage.SecondaryReset, DateTimeOffset.Now, PacingSettings ?? new(), History);
         EvenTargetText.Text = QuotaTargets.Percent(fresh ? targets.EvenRemaining : null);
         CloseTargetText.Text = QuotaTargets.Percent(fresh ? targets.CloseRemaining : null);
@@ -43,7 +41,7 @@ public partial class UsageDetailsWindow : Window
             ? UiText.F("工作目标截止：{0}", UiText.Date(deadline.LocalDateTime))
             : UiText.T("设置有效作息和重置时间后显示下班目标。");
         if (targets.ResetBeforeClose) WorkDeadlineText.Text += "\n" + UiText.T("本周期在下班前重置，工作目标截止于重置时刻。");
-        var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(pace.Color)!;
+        var brush = fresh ? HudTheme.Pace(pace.Color) : HudTheme.Muted;
         RemainingText.Text = usage.SecondaryRemaining is { } remaining ? $"{remaining:0.#}%" : "—%";
         StatusText.Text = UiText.T(pace.Status); StatusText.Foreground = brush; UsedBar.Foreground = brush;
         UsedText.Text = usage.SecondaryUsed is { } used ? $"{used:0.#}%" : "—"; UsedBar.Value = usage.SecondaryUsed ?? 0;
@@ -68,15 +66,15 @@ public partial class UsageDetailsWindow : Window
         {
             var usage = WeeklyPasteParser.Parse(text, DateTimeOffset.Now);
             UsageImported?.Invoke(usage); Update(usage, false);
-            MessageText.Foreground = System.Windows.Media.Brushes.LightGreen;
+            MessageText.Foreground = HudTheme.Success;
             MessageText.Text = UiText.F("已保存：剩余 {0:0.#}%，已用 {1:0.#}%。", usage.SecondaryRemaining, usage.SecondaryUsed);
         }
-        catch (FormatException e) { MessageText.Foreground = System.Windows.Media.Brushes.LightCoral; MessageText.Text = e.Message; }
+        catch (FormatException e) { MessageText.Foreground = HudTheme.Danger; MessageText.Text = e.Message; }
     }
     public void UpdateResetSignal(string headline, string detail, bool attention, bool refreshing)
     {
         RadarHeadline.Text = headline; RadarDetail.Text = detail;
-        RadarHeadline.Foreground = attention ? System.Windows.Media.Brushes.Gold : System.Windows.Media.Brushes.DarkSeaGreen;
+        RadarHeadline.Foreground = attention ? HudTheme.Warning : HudTheme.Text;
         RadarRefresh.IsEnabled = !refreshing; RadarRefresh.Content = UiText.T(refreshing ? "检查中…" : "检查信号");
     }
     private void RadarRefresh_OnClick(object sender, RoutedEventArgs e) => RadarRefreshRequested?.Invoke();

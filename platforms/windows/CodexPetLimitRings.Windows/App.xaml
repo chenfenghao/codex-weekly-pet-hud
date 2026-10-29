@@ -1,13 +1,11 @@
 <Application x:Class="CodexPetLimitRings.Windows.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:CodexPetLimitRings.Windows"
              ShutdownMode="OnExplicitShutdown">
   <Application.Resources>
-    <SolidColorBrush x:Key="CardBrush" Color="#F7F7F8" />
-    <SolidColorBrush x:Key="BorderBrush" Color="#E4E4E7" />
-    <SolidColorBrush x:Key="MutedBrush" Color="#71717A" />
     <Style x:Key="CompactTabItem" TargetType="TabItem">
-      <Setter Property="Foreground" Value="{DynamicResource TabMutedBrush}" />
+      <Setter Property="Foreground" Value="{x:Static local:HudTheme.Muted}" />
       <Setter Property="Padding" Value="14,8" />
       <Setter Property="FontSize" Value="12" />
       <Setter Property="Cursor" Value="Hand" />
@@ -16,13 +14,15 @@
           <ContentPresenter x:Name="TabHeader" ContentSource="Header" RecognizesAccessKey="True" HorizontalAlignment="Center" />
         </Border>
         <ControlTemplate.Triggers>
-          <Trigger Property="IsSelected" Value="True"><Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource TabSelectedBrush}"/><Setter Property="Foreground" Value="{DynamicResource TabTextBrush}"/><Setter TargetName="TabHeader" Property="TextElement.FontWeight" Value="SemiBold"/></Trigger>
-          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource TabMutedBrush}"/></Trigger>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="TabBorder" Property="Background" Value="{x:Static local:HudTheme.Hover}"/></Trigger>
+          <Trigger Property="IsSelected" Value="True"><Setter TargetName="TabBorder" Property="Background" Value="{x:Static local:HudTheme.Selected}"/><Setter Property="Foreground" Value="{x:Static local:HudTheme.Text}"/><Setter TargetName="TabHeader" Property="TextElement.FontWeight" Value="SemiBold"/></Trigger>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="TabBorder" Property="BorderBrush" Value="{x:Static local:HudTheme.Focus}"/></Trigger>
         </ControlTemplate.Triggers>
       </ControlTemplate></Setter.Value></Setter>
     </Style>
     <Style x:Key="CompactTabs" TargetType="TabControl">
       <Setter Property="ItemContainerStyle" Value="{StaticResource CompactTabItem}" />
+      <Setter Property="Foreground" Value="{x:Static local:HudTheme.Text}" />
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TabControl">
         <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
           <TabPanel IsItemsHost="True" KeyboardNavigation.TabIndex="1"/>
@@ -33,9 +33,65 @@
     <Style TargetType="Button">
       <Setter Property="Padding" Value="12,7" />
       <Setter Property="Margin" Value="0,4,0,4" />
-      <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
-      <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
-      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Background" Value="{x:Static local:HudTheme.Card}" />
+      <Setter Property="Foreground" Value="{x:Static local:HudTheme.Text}" />
+      <Setter Property="BorderBrush" Value="{x:Static local:HudTheme.Border}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+          <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{x:Static local:HudTheme.Focus}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{x:Static local:HudTheme.Hover}"/></Trigger>
+        <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="{x:Static local:HudTheme.Pressed}"/></Trigger>
+        <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.6"/></Trigger>
+      </Style.Triggers>
+    </Style>
+    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="{x:Static local:HudTheme.Accent}"/>
+      <Setter Property="Foreground" Value="{x:Static local:HudTheme.Card}"/>
+      <Setter Property="BorderBrush" Value="{x:Static local:HudTheme.Accent}"/>
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{x:Static local:HudTheme.AccentHover}"/></Trigger>
+        <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="{x:Static local:HudTheme.AccentPressed}"/></Trigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="TextBox">
+      <Setter Property="Background" Value="{x:Static local:HudTheme.Card}"/>
+      <Setter Property="Foreground" Value="{x:Static local:HudTheme.Text}"/>
+      <Setter Property="BorderBrush" Value="{x:Static local:HudTheme.Border}"/>
+      <Setter Property="CaretBrush" Value="{x:Static local:HudTheme.Text}"/>
+      <Setter Property="SelectionBrush" Value="{x:Static local:HudTheme.Selected}"/>
+    </Style>
+    <Style TargetType="ComboBox">
+      <Setter Property="Background" Value="{x:Static local:HudTheme.Card}"/>
+      <Setter Property="Foreground" Value="{x:Static local:HudTheme.Text}"/>
+      <Setter Property="BorderBrush" Value="{x:Static local:HudTheme.Border}"/>
+    </Style>
+    <Style TargetType="CheckBox">
+      <Setter Property="Foreground" Value="{x:Static local:HudTheme.Text}"/>
+    </Style>
+    <Style TargetType="ToolTip">
+      <Setter Property="Background" Value="{x:Static local:HudTheme.Canvas}"/>
+      <Setter Property="Foreground" Value="{x:Static local:HudTheme.Text}"/>
+      <Setter Property="BorderBrush" Value="{x:Static local:HudTheme.Border}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="12,10"/>
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="MaxWidth" Value="440"/>
+      <Setter Property="ContentTemplate"><Setter.Value><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap"/></DataTemplate></Setter.Value></Setter>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToolTip">
+        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9" Padding="{TemplateBinding Padding}">
+          <ContentPresenter/>
+        </Border>
+      </ControlTemplate></Setter.Value></Setter>
     </Style>
   </Application.Resources>
 </Application>

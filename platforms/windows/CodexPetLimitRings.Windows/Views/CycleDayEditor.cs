@@ -18,7 +18,7 @@ public sealed class CycleDayEditor : StackPanel
     internal List<DayRow> Rows { get; } = [];
     private readonly TextBlock _range = new() { FontSize=11, TextWrapping=TextWrapping.Wrap, Margin=new Thickness(0,0,0,8) };
     private readonly StackPanel _days = new();
-    private readonly TextBlock _hint = new() { FontSize=10, TextWrapping=TextWrapping.Wrap, Margin=new Thickness(0,8,0,0), Foreground=Brushes.DimGray };
+    private readonly TextBlock _hint = new() { FontSize=10, TextWrapping=TextWrapping.Wrap, Margin=new Thickness(0,8,0,0), Foreground=HudTheme.Muted };
     private OverlaySettings _settings = new();
     private long? _reset;
     private DateTimeOffset? _testNow;
@@ -61,7 +61,7 @@ public sealed class CycleDayEditor : StackPanel
         var grid=new Grid { Margin=new Thickness(0,3,0,3) };
         foreach(var width in new[]{double.NaN,54d,69d,12d,69d,44d})
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width=double.IsNaN(width)?new GridLength(1,GridUnitType.Star):new GridLength(width) });
-        var label=new TextBlock { FontSize=11, VerticalAlignment=VerticalAlignment.Center, Foreground=date==Now.LocalDateTime.Date?QuotaInk.Color("#276946"):Brushes.DimGray };
+        var label=new TextBlock { FontSize=11, VerticalAlignment=VerticalAlignment.Center, Foreground=date==Now.LocalDateTime.Date?HudTheme.Text:HudTheme.Muted };
         var working=new CheckBox { VerticalAlignment=VerticalAlignment.Center, FontSize=11 };
         ComboBox Clock(string name)
         {
@@ -71,11 +71,11 @@ public sealed class CycleDayEditor : StackPanel
             return box;
         }
         var start=Clock(L("上班","Start"));var end=Clock(L("下班","End"));
-        var copy=new Button { Content=L("复制","Copy"), FontSize=10, Background=QuotaInk.Color("#EAF1EC"), Foreground=QuotaInk.Color("#315541"), BorderBrush=QuotaInk.Color("#D5E1D9"), Padding=new Thickness(3,2,3,2), Margin=new Thickness(3,0,0,0), ToolTip=L("将这一行的时间复制给今天及之后的其他工作日；休息日和过去日期保持不变。", "Copy these hours to other workdays from today onward; keep days off and past dates unchanged.") };
+        var copy=new Button { Content=L("复制","Copy"), FontSize=10, Padding=new Thickness(3,2,3,2), Margin=new Thickness(3,0,0,0), ToolTip=L("将这一行的时间复制给今天及之后的其他工作日；休息日和过去日期保持不变。", "Copy these hours to other workdays from today onward; keep days off and past dates unchanged.") };
         var row=new DayRow(date,working,start,end,copy,label); Rows.Add(row);
         void Add(UIElement item,int column) { Grid.SetColumn(item,column);grid.Children.Add(item); }
         Add(label,0);Add(working,1);Add(start,2);Add(new TextBlock {Text="–",VerticalAlignment=VerticalAlignment.Center,HorizontalAlignment=System.Windows.HorizontalAlignment.Center},3);Add(end,4);Add(copy,5);
-        var border=new Border { CornerRadius=new CornerRadius(5),Padding=new Thickness(6,4,6,4),Background=date==Now.LocalDateTime.Date?QuotaInk.Color("#EDF5EF"):Brushes.Transparent,Child=grid };
+        var border=new Border { CornerRadius=new CornerRadius(5),Padding=new Thickness(6,4,6,4),Background=date==Now.LocalDateTime.Date?HudTheme.Selected:Brushes.Transparent,Child=grid };
         _days.Children.Add(border);
         working.Checked+=(_,_)=>Commit(row);working.Unchecked+=(_,_)=>Commit(row);
         foreach(var box in new[]{start,end})

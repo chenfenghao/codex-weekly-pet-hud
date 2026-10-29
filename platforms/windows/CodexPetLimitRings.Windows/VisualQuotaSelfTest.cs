@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CodexPetLimitRings.Windows.Views;
-using Color = System.Windows.Media.Color;
 
 namespace CodexPetLimitRings.Windows;
 
@@ -65,14 +64,14 @@ internal static class VisualQuotaSelfTest
             var dashboard=new QuotaDashboard();dashboard.Update(sampleReset,sampleNow,settings,observations);
             Render(dashboard,580,408,Path.Combine(directory,$"dashboard.{language}.png"));
             var editor=new WorkScheduleEditor();editor.Update(settings);
-            Render(editor,440,211,Path.Combine(directory,$"schedule.{language}.png"),true);
+            Render(editor,440,211,Path.Combine(directory,$"schedule.{language}.png"));
             var capsule=new PotionWindow("sample",default,default,default,default) { PacingSettings=settings };
             capsule.UpdateUsage(48,sampleReset,"live");
             capsule.UpdateResetSignal(UiText.T("重置雷达 · 暂无新信号"),"Sample data",false);
             var capsuleContent=(FrameworkElement)capsule.Content;capsule.Content=null;
-            Render(capsuleContent,190,72,Path.Combine(directory,$"visual-capsule.{language}.png"));
+            Render(capsuleContent,HudLayout.BadgeWidth,HudLayout.RingDiameter,Path.Combine(directory,$"visual-capsule.{language}.png"));
             capsule.UpdateResetSignal(UiText.T("雷达 · 新重置信号"),"Sample data",true);
-            Render(capsuleContent,190,72,Path.Combine(directory,$"visual-radar.{language}.png"));
+            Render(capsuleContent,HudLayout.BadgeWidth,HudLayout.RingDiameter,Path.Combine(directory,$"visual-radar.{language}.png"));
             capsule.Close();
             var details=new UsageDetailsWindow { PacingSettings=settings, History=observations };
             details.ApplyLanguage();details.Update(new UsageSnapshot(null,52,null,sampleReset,"live",sampleNow),false);
@@ -82,9 +81,9 @@ internal static class VisualQuotaSelfTest
         }
         UiText.SetLanguage(original);
     }
-    private static void Render(FrameworkElement content,double width,double height,string file,bool light=false)
+    private static void Render(FrameworkElement content,double width,double height,string file)
     {
-        var host=new System.Windows.Controls.Border { Background=new SolidColorBrush(light?Colors.White:Color.FromRgb(26,32,29)),Child=content };
+        var host=new System.Windows.Controls.Border { Background=HudTheme.Canvas,Child=content };
         host.Measure(new System.Windows.Size(width,height));host.Arrange(new Rect(0,0,width,height));host.UpdateLayout();
         var bitmap=new RenderTargetBitmap((int)width*2,(int)height*2,192,192,PixelFormats.Pbgra32);bitmap.Render(host);
         var encoder=new PngBitmapEncoder();encoder.Frames.Add(BitmapFrame.Create(bitmap));using var stream=File.Create(file);encoder.Save(stream);

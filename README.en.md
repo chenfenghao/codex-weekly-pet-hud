@@ -4,7 +4,13 @@
 
 [Project website](https://chenfenghao.github.io/codex-weekly-pet-hud/en/) · [中文官网](https://chenfenghao.github.io/codex-weekly-pet-hud/)
 
-A compact Windows status bar **above your Codex Pet**. Track your remaining weekly quota, see whether your usage is on pace, and receive community reset alerts.
+A compact Windows quota widget **beside your Codex Pet or in the taskbar**. Track your remaining weekly quota, see whether your usage is on pace, and receive community reset alerts.
+
+**v1.6.3: dual rings and visible numbers.** Outer ring / top number = quota remaining; inner ring / bottom number = headroom until close. The widget shows numbers without text labels. Default sizes are 100 × 40 beside Pet and approximately 90 × 36 in the taskbar, with DPI scaling. Headroom is actual remaining minus the closing target, in percentage points of the weekly allowance. A deficit clears the inner arc and shows a negative number in a warning color. Stale balances use ≈ and no current budget; unavailable data is shown as —, not zero. Hover for targets and explanations, click for details, right-click the taskbar widget for Settings; Pet dragging remains available.
+
+<img src="docs/images/ring-preview.png" alt="Pet and taskbar ring states with sample data; Chinese preview labels" width="640">
+
+**Consistent light gray and violet UI:** background `#EFF1F5`, text `#4C4F69` and accent `#8839EF` across details, settings, charts, tooltips and the widget. New radar signals retain an amber dot. Existing schedules, calculations, history, imports and notifications remain compatible.
 
 **Compact interface in v1.6.2:** details now use a 560 × 600 window with Overview, Plan & history, and Manual import tabs. The overview keeps quota, targets and reset time visible; radar details and extra metrics expand on demand, and Refresh quota stays in the footer. Settings use a 520 × 620 window with General, Schedule and Appearance tabs. Taskbar mode hides Pet appearance controls. Quota calculations, schedule editing, history, notifications, languages and both display modes are preserved.
 
@@ -21,8 +27,8 @@ A compact Windows status bar **above your Codex Pet**. Track your remaining week
 
 <img src="docs/images/dashboard.en.png" alt="Daily quota allocation and balance chart with sample data" width="640">
 
-- **Compact gauge:** actual balance and today's headroom stay visible. White upper tick = even-use target now; blue lower tick = closing target. Hover for exact values. Green is above both, amber between them, red below both; stale data is gray.
-- **Today's headroom:** actual remaining minus the closing target, in percentage points of the weekly allowance. Negative values say Below. The adaptive work-hours budget remains in details as a separate reference.
+- **Quota widget:** dual rings and two numeric values show quota remaining and headroom until close. Hover for targets and explanations; click for full details.
+- **Today's headroom:** actual remaining minus the closing target, in percentage points of the weekly allowance. Deficits show a negative number in the widget and a Below explanation in details. The adaptive work-hours budget remains in details as a separate reference.
 - **Daily cards:** split by local calendar date, so a seven-day cycle can span eight dates. Partial boundary days and overnight shifts are weighted by actual work hours, excluding breaks. Keep is the planned balance at the end of that calendar date. Hover for scheduled times. Allocations total 100% before display rounding.
 - **Balance chart:** dashed gray = even-use, blue = work plan, green = observations; manual imports are hollow dots. Only consecutive automatic reads in the same cycle without refills connect, within twice the refresh interval plus two minutes. Missing history stays blank.
 - **Daily schedule:** set Work/Off and start/end times for each date in reset-cycle order. Edits save automatically. Shared breaks and the allocation preview are under More settings.
@@ -31,7 +37,7 @@ A compact Windows status bar **above your Codex Pet**. Track your remaining week
 
 History starts with successful reads or imports after upgrading. Local `quota-history.json` stores timestamps, resets, balances and sources only, retaining the last 30 days and at most 50,000 points on writes. History is excluded from releases. Schedule edits recalculate the plan without changing observations.
 
-**Two target formulas.** Gauge markers and details retain both **Even** and **Close**.
+**Two target formulas.** Tooltips and details retain both **Even** and **Close**.
 
 - **Even (now) = wall-clock time until reset / seven days × 100%**, changing continuously.
 - **Close = work hours after today's shift ends until reset / total work hours in the cycle × 100%**. This is the planned balance at shift end, fixed throughout the day. Neither target depends on actual quota spending.
@@ -42,11 +48,11 @@ Set weekdays, shift times and an optional break in Settings → Schedule (15-min
 
 Calculations use local time and the fixed seven-day window before reset, clipping shifts at its boundaries. Invalid schedules hide Close with a schedule warning while retaining Even. With no work left before reset, actual quota remains visible and working-hours pace prediction pauses. Schedule changes recalculate work targets for the whole cycle.
 
-**New in v1.2.0: taskbar mode.** Choose **Settings → Display mode → Taskbar (Pet not required)** for an independent two-line display. Pet mode remains available.
+**New in v1.2.0: taskbar mode.** Choose **Settings → Display mode → Taskbar (Pet not required)** for an independent quota ring. Pet mode remains available.
 
-<img src="docs/images/taskbar.en.png" alt="Two-line taskbar quota display with sample data" width="285">
+<img src="docs/images/taskbar.en.png" alt="Taskbar quota ring with sample data" width="180">
 
-The widget starts in free space left of the primary taskbar's notification area. Click for details, right-click for Settings; a gold dot marks reset radar attention. Use **Move left** to adjust its position independently of the Pet. Quota updates continue with Pet closed or the taskbar auto-hidden. Switch back to **Follow Codex Pet** anytime.
+The widget starts in free space left of the primary taskbar's notification area. Hover for numbers, click for details, right-click for Settings; an amber dot marks reset radar attention. Use **Move left** to adjust its position independently of the Pet. Quota updates continue with Pet closed or the taskbar auto-hidden. Switch back to **Follow Codex Pet** anytime.
 
 Only the primary horizontal taskbar is supported; widget size follows taskbar height. The widget does not reserve space or push app icons aside. On crowded taskbars, move it to a free area or use Pet mode. Unsupported/vertical layouts hide the widget and retain the tray menu.
 
@@ -55,8 +61,8 @@ Only the primary horizontal taskbar is supported; widget size follows taskbar he
 [Download Windows x64](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest) · [Windows development guide](platforms/windows/README.en.md) · [Changelog](CHANGELOG.md) · [MIT License](LICENSE)
 
 <p>
-  <img src="docs/images/capsule.en.png" alt="Remaining weekly quota, pace, even-use and shift-end targets and reset radar" width="285">
-  <img src="docs/images/radar-alert.en.png" alt="Highlighted reset signal in the third row" width="285">
+  <img src="docs/images/capsule.en.png" alt="Dual rings and numbers show remaining quota and headroom until close" width="200">
+  <img src="docs/images/radar-alert.en.png" alt="Amber dot for a new reset signal" width="200">
   <img width="326" height="346" alt="image" src="https://github.com/user-attachments/assets/e4a29b1a-56e0-4975-bee6-c72c7969aade" />
 
 </p>
@@ -65,7 +71,7 @@ Only the primary horizontal taskbar is supported; widget size follows taskbar he
 
 ## Features
 
-- **Small, three-row HUD:** approximately 190 × 72 device-independent pixels by default, with adjustable scale. Shows quota remaining, today’s headroom, target markers and reset radar; pace remains in details and tooltips.
+- **Quota ring:** 100 × 40 device-independent pixels beside Pet and approximately 90 × 36 in the taskbar. Outer / top shows remaining; inner / bottom shows closing headroom. Targets, pace and sources remain in tooltips and details.
 - **Chinese and English UI:** switch instantly in Settings. The choice is saved and restored on restart; no separate executable is needed.
 - **Automatic weekly quota updates:** every 5 minutes by default, adjustable from 1 to 60 minutes, with manual refresh available.
 - **Follows your real Pet:** drag the Pet or the status bar. Adjust placement, offsets and spacing; the HUD moves aside near screen edges.
@@ -77,7 +83,7 @@ Only the primary horizontal taskbar is supported; widget size follows taskbar he
 
 ## Download and run
 
-1. Download `Codex-Weekly-Pet-HUD-v1.6.2-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
+1. Download `Codex-Weekly-Pet-HUD-v1.6.3-Windows-x64.zip` from [Releases](https://github.com/chenfenghao/codex-weekly-pet-hud/releases/latest).
 2. **Extract the entire archive** to a permanent folder. Keep the DLL files beside the executable.
 3. Run `CodexWeeklyPetHud.exe`, then open Pet in Codex or select Taskbar mode from the tray Settings menu.
 4. Click the status bar, then **设置 (Settings)**. Under **语言 / Language**, choose **English**.
@@ -89,7 +95,7 @@ Requires Windows 10/11 x64 and a signed-in Codex desktop app (Pet support is onl
 To upgrade, exit the previous version through its tray menu before extracting the new version. Settings are stored outside the application folder and survive replacement. To uninstall a portable copy, exit it and delete its extracted folder.
 
 ```powershell
-Get-FileHash .\Codex-Weekly-Pet-HUD-v1.6.2-Windows-x64.zip -Algorithm SHA256
+Get-FileHash .\Codex-Weekly-Pet-HUD-v1.6.3-Windows-x64.zip -Algorithm SHA256
 ```
 
 Compare the result with `SHA256SUMS.txt` from the same release.
@@ -179,7 +185,7 @@ Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and 
 ```powershell
 git clone https://github.com/chenfenghao/codex-weekly-pet-hud.git
 cd codex-weekly-pet-hud
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.6.2
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.6.3
 ```
 
 The portable ZIP and SHA-256 file are written to `dist`. Packaging reads only build output and project documentation, not your user data directory. To publish the executable directly:

@@ -9,8 +9,8 @@ internal static class TaskbarLayout
         if (width <= height || width <= 0 || height <= 0 || !double.IsFinite(dpiScale) || dpiScale <= 0)
             return null; // Vertical/unsupported bars keep the tray menu available.
         var gap = Math.Max(2, (int)Math.Round(4 * dpiScale));
-        var hudWidth = (int)Math.Round(190 * dpiScale);
         var hudHeight = Math.Min(height - gap * 2, (int)Math.Round(36 * dpiScale));
+        var hudWidth = (int)Math.Round(hudHeight * HudLayout.BadgeWidth / HudLayout.RingDiameter);
         var right = Math.Clamp(trayStart, 0, width) - gap;
         var leftLimit = (int)Math.Round(64 * dpiScale); // Never cover Start.
         if (hudHeight < 20 * dpiScale || right - leftLimit < hudWidth) return null;

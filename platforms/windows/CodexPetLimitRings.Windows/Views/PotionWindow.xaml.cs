@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using CodexPetLimitRings.Windows.Interop;
 using InputMouseEventArgs = System.Windows.Input.MouseEventArgs;
 
@@ -17,6 +16,9 @@ public partial class PotionWindow : Window
     private bool _pointerPressed;
     private bool _pointerMoved;
     private ScreenPointer _pressPointer;
+    private string _usageSummary = "";
+    private string _radarHeadline = "";
+    private string _radarDetail = "";
     public event Action? PotionClicked;
     internal event Action<ScreenPointer>? PointerPressed;
     internal event Action<ScreenPointer>? PointerMoved;
@@ -46,36 +48,42 @@ public partial class PotionWindow : Window
         var pace = WeeklyPacing.Calculate(remaining, resetAt, now, PacingSettings);
         var targets = WeeklyTargets.Calculate(resetAt, now, PacingSettings);
         var fresh = source is "live" or "manual";
-        PaceText.Text = UiText.T(source == "none" ? "同步中" : source == "stale" ? "待更新" : pace.Status switch
+        var paceText = UiText.T(source == "none" ? "同步中" : source == "stale" ? "待更新" : pace.Status switch
         {
             "待确认重置" => "待重置", "刚刚开始" => "初始期", "检查时间" => "查时间", "等待数据" => "待数据", _ => pace.Status
         });
-        RemainingText.Text = remaining is { } value ? UiText.F("剩余 {0:0.#}%", value) : UiText.T("剩余 —");
-        IdealText.Text = QuotaVisualModel.BudgetText(fresh ? remaining : null, targets);
-        Gauge.Update(remaining, targets, fresh);
+        var remainingText = remaining is { } value ? UiText.F("剩余 {0:0.#}%", value) : UiText.T("剩余 —");
+        var budgetText = QuotaVisualModel.BudgetText(fresh ? remaining : null, targets);
+        Ring.UpdateUsage(remaining, fresh, targets);
         var countdown = WeeklyPacing.Countdown(resetAt, DateTimeOffset.Now);
-        var brush = (SolidColorBrush)new BrushConverter().ConvertFromString(fresh ? pace.Color : "#9AADA1")!;
-        StatusDot.Fill = brush; PaceText.Foreground = brush;
-        Capsule.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, brush.Color.R, brush.Color.G, brush.Color.B));
         var sourceText = UiText.T(source == "manual" ? "粘贴记录 · 不自动覆盖" : source == "live" ? "自动更新" : "等待最新数据");
-        Root.ToolTip = $"{RemainingText.Text} · {PaceText.Text}\n{IdealText.Text}\n{targets.Compact(fresh)}\n{UiText.T("匀速：按自然时间计算此刻应剩；下班：按工作时段计算下班时应留。目标不随实际消耗改变。") }\n{pace.Prediction}\n{countdown}\n{sourceText}";
-        if (targets.ResetBeforeClose) Root.ToolTip += "\n" + UiText.T("本周期在下班前重置，工作目标截止于重置时刻。");
-        AutomationProperties.SetName(this, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
-        AutomationProperties.SetName(Root, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
+        _usageSummary = $"{remainingText} · {paceText}\n{budgetText}\n{targets.Compact(fresh)}\n{UiText.T("匀速：按自然时间计算此刻应剩；下班：按工作时段计算下班时应留。目标不随实际消耗改变。") }\n{pace.Prediction}\n{countdown}\n{sourceText}";
+        if (targets.ResetBeforeClose) _usageSummary += "\n" + UiText.T("本周期在下班前重置，工作目标截止于重置时刻。");
+        UpdateToolTip();
     }
 
     public void ApplyScale(double scale)
     {
         if (double.IsFinite(_appliedScale) && Math.Abs(_appliedScale - scale) < 0.0001) return;
         _appliedScale = scale;
-        Width = 190 * scale; Height = 72 * scale;
+        Width = HudLayout.BadgeWidth * scale; Height = HudLayout.RingDiameter * scale;
     }
 
     public void UpdateResetSignal(string headline, string detail, bool attention)
     {
-        ResetSignalText.Text = headline;
-        ResetSignalText.Foreground = attention ? System.Windows.Media.Brushes.Gold : System.Windows.Media.Brushes.DarkSeaGreen;
-        ResetSignalText.ToolTip = detail;
+        _radarHeadline = headline;
+        _radarDetail = detail;
+        Ring.SetAttention(attention);
+        UpdateToolTip();
+    }
+
+    private void UpdateToolTip()
+    {
+        Root.ToolTip = string.Join("\n", new[] { _usageSummary, _radarHeadline, _radarDetail }.Where(text => !string.IsNullOrWhiteSpace(text)))
+            + "\n" + UiText.T("外圈 / 上方：剩余；内圈 / 下方：下班可用。负数表示低于目标，≈ 表示上次记录。")
+            + "\n" + UiText.T("单击查看详情，拖动调整位置。");
+        AutomationProperties.SetName(this, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
+        AutomationProperties.SetName(Root, $"{UiText.T(_accessibleLabel)}: {Root.ToolTip}");
     }
 
     private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs eventArgs)

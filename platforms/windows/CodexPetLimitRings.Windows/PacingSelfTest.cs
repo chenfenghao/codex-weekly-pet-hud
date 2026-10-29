@@ -16,6 +16,7 @@ internal static class PacingSelfTest
         TargetSelfTest.Run(Check);
         DailyScheduleSelfTest.Run(Check, directory);
         VisualQuotaSelfTest.Run(Check, directory);
+        RingVisualSelfTest.Run(Check, directory);
         var now = new DateTimeOffset(2026, 9, 13, 8, 0, 0, TimeSpan.FromHours(8));
         var parsed = WeeklyPasteParser.Parse("重置时间：2026年9月19日 16:12\n剩余 80%", now);
         Check(parsed.SecondaryUsed == 20 && parsed.SecondaryRemaining == 80, "Remaining percent conversion");
@@ -35,7 +36,7 @@ internal static class PacingSelfTest
         Check(WeeklyPacing.Calculate(75, reset, now).Status == "偏慢", "Slow pace");
         Check(WeeklyPacing.Calculate(57.5, reset, now).Status == "稳健", "Slow/steady threshold");
         var aboveDefault = HudLayout.CalculateCapsule(new PetAnchor(800, 400, 112, 121, null, 0, 0, 1920, 1040), new OverlaySettings());
-        Check(aboveDefault.PotionWidth == 190 && aboveDefault.PotionHeight == 72 && aboveDefault.Y + aboveDefault.PotionHeight < 400, "Small badge above by default");
+        Check(aboveDefault.PotionWidth == 100 && aboveDefault.PotionHeight == 40 && aboveDefault.Y + aboveDefault.PotionHeight < 400, "Small badge above by default");
         Check(new OverlaySettings().AutoReadUsage, "Auto read on by default");
         var intervalSettings = new OverlaySettings();
         Check(intervalSettings.RefreshInterval == TimeSpan.FromMinutes(5), "Five minute refresh default");
@@ -68,9 +69,9 @@ internal static class PacingSelfTest
         capsule.ApplyScale(1);
         capsule.UpdateUsage(80, parsed.SecondaryReset, "manual");
         capsule.UpdateResetSignal("重置雷达 · 暂无新信号", "公开 API 已连接", false);
-        Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "capsule.png"));
+        Render((FrameworkElement)capsule.Content, HudLayout.BadgeWidth, HudLayout.RingDiameter, Path.Combine(directory, "capsule.png"));
         capsule.UpdateResetSignal("雷达 · 新重置信号", "社区公告待核实", true);
-        Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "radar-alert.png"));
+        Render((FrameworkElement)capsule.Content, HudLayout.BadgeWidth, HudLayout.RingDiameter, Path.Combine(directory, "radar-alert.png"));
         var settingsWindow = new SettingsWindow();
         settingsWindow.Apply(new OverlaySettings());
         Render((FrameworkElement)settingsWindow.Content, 520, 620, Path.Combine(directory, "settings.png"));

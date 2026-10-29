@@ -9,13 +9,17 @@ foreach (var offset in new[] { -1d, 0, 50, 400, 1600, double.NaN, double.Positiv
 {
     var width = (int)(1920 * dpi); var height = (int)(48 * dpi); var tray = (int)(1640 * dpi);
     var placed = TaskbarLayout.Calculate(width, height, tray, dpi, offset) ?? throw new Exception("Taskbar layout missing");
+    if (Math.Abs(placed.Width - placed.Height * 2.5) > 1 || placed.Height > 36 * dpi + 1)
+        throw new Exception("Taskbar ring and percentage must retain their aspect ratio at every DPI");
     if (placed.X < 64 * dpi || placed.X + placed.Width >= tray || placed.Y < 0 || placed.Y + placed.Height > height)
         throw new Exception("Taskbar overlaps reserved boundaries");
 }
 if (TaskbarLayout.Calculate(48, 1080, 900, 1, 0) is not null ||
-    TaskbarLayout.Calculate(300, 48, 220, 1, 0) is not null ||
+    TaskbarLayout.Calculate(160, 48, 90, 1, 0) is not null ||
     TaskbarLayout.Calculate(1920, 12, 1700, 1, 0) is not null)
     throw new Exception("Unsupported taskbar should not create an overlay");
+if (TaskbarLayout.Calculate(300, 48, 220, 1, 0) is not { Width: 90, Height: 36 })
+    throw new Exception("Compact ring should fit a taskbar too narrow for the old text HUD");
 var legacySettings = JsonSerializer.Deserialize<OverlaySettings>("{\"RefreshMinutes\":17}")!;
 legacySettings.Normalize();
 if (legacySettings.DisplayMode != "pet" || legacySettings.RefreshMinutes != 17) throw new Exception("Legacy settings changed mode");

@@ -42,7 +42,7 @@ internal static class OverlayOrderSelfTest
             Check(popup != 0, "Could not create test popup");
             await Task.Delay(80);
             var petPoint = new NativeMethods.NativePoint(proxyBounds.X + 40, proxyBounds.Y + 40);
-            var capsulePoint = new NativeMethods.NativePoint(capsuleBounds.X + 40, capsuleBounds.Y + 25);
+            var capsulePoint = new NativeMethods.NativePoint(capsuleBounds.X + capsuleBounds.Width / 2, capsuleBounds.Y + capsuleBounds.Height / 2);
             Check(NativeMethods.IsShellFlyoutOpen(), "Visible tray popup was not detected");
             for (var i = 0; i < 8; i++)
             {

@@ -2,15 +2,12 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:CodexPetLimitRings.Windows" xmlns:views="clr-namespace:CodexPetLimitRings.Windows.Views"
         Title="{local:Tr '周额度 · 挂件设置'}" Width="520" Height="620" MinWidth="480" MinHeight="450"
-        FontFamily="Microsoft YaHei UI" Background="#FAFAFA" WindowStartupLocation="CenterScreen" Closing="Window_OnClosing">
-  <Window.Resources>
-    <SolidColorBrush x:Key="TabSelectedBrush" Color="#E3EEE7"/><SolidColorBrush x:Key="TabTextBrush" Color="#254F39"/><SolidColorBrush x:Key="TabMutedBrush" Color="#67756C"/>
-  </Window.Resources>
-  <Grid Margin="18" Background="#FAFAFA">
+        Foreground="{x:Static local:HudTheme.Text}" FontFamily="Microsoft YaHei UI" Background="{x:Static local:HudTheme.Canvas}" WindowStartupLocation="CenterScreen" Closing="Window_OnClosing">
+  <Grid Margin="18" Background="{x:Static local:HudTheme.Canvas}">
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
       <DockPanel Margin="0,0,0,14">
         <Button DockPanel.Dock="Right" Content="{local:Tr '恢复默认'}" Click="ResetButton_OnClick" />
-        <StackPanel><TextBlock Text="{local:Tr 'Codex 周额度'}" FontSize="18" FontWeight="Bold"/><TextBlock Text="{local:Tr '修改后立即生效，自动保存'}" Foreground="#71717A"/></StackPanel>
+        <StackPanel><TextBlock Text="{local:Tr 'Codex 周额度'}" FontSize="18" FontWeight="Bold"/><TextBlock Text="{local:Tr '修改后立即生效，自动保存'}" Foreground="{x:Static local:HudTheme.Muted}"/></StackPanel>
       </DockPanel>
     <TabControl x:Name="SettingsTabs" Grid.Row="1" Style="{StaticResource CompactTabs}">
       <TabItem x:Name="GeneralTab" Header="{local:Tr '常用'}"><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Margin="0,0,4,0">
@@ -21,7 +18,7 @@
           <ComboBoxItem Tag="en" Content="English"/>
         </ComboBox>
       </DockPanel>
-      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
+      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="{x:Static local:HudTheme.Card}" BorderBrush="{x:Static local:HudTheme.Border}" BorderThickness="1">
         <StackPanel>
           <TextBlock Text="{local:Tr '显示模式'}" FontSize="15" FontWeight="SemiBold"/>
           <ComboBox x:Name="DisplayModeChoice" Margin="0,8,0,8" SelectionChanged="Control_OnChanged">
@@ -29,14 +26,14 @@
             <ComboBoxItem Tag="taskbar" Content="{local:Tr '任务栏（无需打开宠物）'}"/>
           </ComboBox>
           <StackPanel x:Name="TaskbarOptions">
-            <TextBlock Text="{local:Tr '在主屏幕任务栏空白处显示两行额度。单击查看详情，右键打开设置。'}" Foreground="#71717A" TextWrapping="Wrap"/>
-            <DockPanel Margin="0,12,0,0"><TextBlock Text="{local:Tr '向左移动（避开应用图标）'}"/><TextBlock x:Name="TaskbarOffsetValue" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
+            <TextBlock Text="{local:Tr '在主屏幕任务栏显示圆环、剩余和下班可用。单击看详情，右键打开设置。'}" Foreground="{x:Static local:HudTheme.Muted}" TextWrapping="Wrap"/>
+            <DockPanel Margin="0,12,0,0"><TextBlock Text="{local:Tr '向左移动（避开应用图标）'}"/><TextBlock x:Name="TaskbarOffsetValue" HorizontalAlignment="Right" Foreground="{x:Static local:HudTheme.Muted}"/></DockPanel>
             <Slider ToolTip="{local:Tr '默认在通知区域左侧；不会挤开任务栏图标。如有重叠，请调整位置或切回宠物模式。'}" x:Name="TaskbarOffset" Minimum="0" Maximum="1600" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="Control_OnChanged"/>
 
           </StackPanel>
         </StackPanel>
       </Border>
-      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
+      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="{x:Static local:HudTheme.Card}" BorderBrush="{x:Static local:HudTheme.Border}" BorderThickness="1">
         <StackPanel>
           <TextBlock Text="{local:Tr '自动更新'}" FontSize="15" FontWeight="SemiBold"/>
           <DockPanel Margin="0,10,0,5"><TextBlock Text="{local:Tr '读取额度的间隔'}"/><TextBlock x:Name="RefreshMinutesValue" HorizontalAlignment="Right" FontWeight="SemiBold"/></DockPanel>
@@ -49,14 +46,14 @@
       </Border>
       </StackPanel></ScrollViewer></TabItem>
       <TabItem Header="{local:Tr '作息'}"><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Margin="0,0,4,0">
-      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
+      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="{x:Static local:HudTheme.Card}" BorderBrush="{x:Static local:HudTheme.Border}" BorderThickness="1">
         <StackPanel>
           <TextBlock Text="{local:Tr '额度节奏算法'}" FontSize="15" FontWeight="SemiBold"/>
           <CheckBox x:Name="WorkHoursEnabled" Content="{local:Tr '速率与预算按工作时段计算'}" Margin="0,10,0,8" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
           <StackPanel x:Name="WorkHoursOptions">
             <views:CycleDayEditor x:Name="DayEditor" Margin="0,5,0,10"/>
             <Expander Header="{local:Tr '更多设置（默认作息 / 午休）'}" Margin="0,8,0,0"><StackPanel Margin="0,12,0,0">
-            <TextBlock Text="{local:Tr '默认作息用于以后周期；修改这里不会覆盖已经设置的本周期。'}" TextWrapping="Wrap" Foreground="#71717A" Margin="0,0,0,10"/>
+            <TextBlock Text="{local:Tr '默认作息用于以后周期；修改这里不会覆盖已经设置的本周期。'}" TextWrapping="Wrap" Foreground="{x:Static local:HudTheme.Muted}" Margin="0,0,0,10"/>
             <WrapPanel x:Name="WorkDaysPanel" Margin="0,0,0,10">
               <CheckBox Content="{local:Tr '周一'}" Tag="1" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
               <CheckBox Content="{local:Tr '周二'}" Tag="2" Margin="0,0,12,6" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
@@ -69,19 +66,19 @@
             <WrapPanel><TextBlock Text="{local:Tr '上班'}" VerticalAlignment="Center" Margin="0,0,8,0"/><ComboBox x:Name="WorkStart" Width="88" SelectionChanged="Control_OnChanged"/><TextBlock Text="{local:Tr '下班'}" VerticalAlignment="Center" Margin="16,0,8,0"/><ComboBox x:Name="WorkEnd" Width="88" SelectionChanged="Control_OnChanged"/></WrapPanel>
             <CheckBox x:Name="WorkBreakEnabled" Content="{local:Tr '扣除休息时段'}" Margin="0,12,0,8" Checked="Control_OnChanged" Unchecked="Control_OnChanged"/>
             <WrapPanel><ComboBox x:Name="WorkBreakStart" Width="88" SelectionChanged="Control_OnChanged"/><TextBlock Text="–" Margin="10,0"/><ComboBox x:Name="WorkBreakEnd" Width="88" SelectionChanged="Control_OnChanged"/></WrapPanel>
-            <TextBlock x:Name="PreviewLabel" FontSize="11" Foreground="#71717A" Margin="0,14,0,5"/>
+            <TextBlock x:Name="PreviewLabel" FontSize="11" Foreground="{x:Static local:HudTheme.Muted}" Margin="0,14,0,5"/>
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="207"><views:QuotaDashboard x:Name="SchedulePreview" AllocationOnly="True" Width="580" Height="188"/></ScrollViewer>
-            <TextBlock x:Name="WorkHoursSummary" TextWrapping="Wrap" Foreground="#71717A" Margin="0,10,0,0"/>
-            <TextBlock Text="{local:Tr '使用本机时区。下班早于上班表示跨午夜，工作日按上班当天。今日额度以午夜分界；修改后会重新计算本周期。'}" TextWrapping="Wrap" Foreground="#71717A" Margin="0,8,0,0"/>
+            <TextBlock x:Name="WorkHoursSummary" TextWrapping="Wrap" Foreground="{x:Static local:HudTheme.Muted}" Margin="0,10,0,0"/>
+            <TextBlock Text="{local:Tr '使用本机时区。下班早于上班表示跨午夜，工作日按上班当天。今日额度以午夜分界；修改后会重新计算本周期。'}" TextWrapping="Wrap" Foreground="{x:Static local:HudTheme.Muted}" Margin="0,8,0,0"/>
             </StackPanel></Expander>
           </StackPanel>
         </StackPanel>
       </Border>
       </StackPanel></ScrollViewer></TabItem>
       <TabItem x:Name="PetAppearanceTab" Header="{local:Tr '外观'}"><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel Margin="0,0,4,0">
-      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
+      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="{x:Static local:HudTheme.Card}" BorderBrush="{x:Static local:HudTheme.Border}" BorderThickness="1">
         <StackPanel>
-          <TextBlock Text="{local:Tr '位置'}" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="{local:Tr '状态条跟随 Codex 宠物，靠近屏幕边缘时自动换侧。'}" Foreground="#71717A" Margin="0,2,0,12"/>
+          <TextBlock Text="{local:Tr '位置'}" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="{local:Tr '状态条跟随 Codex 宠物，靠近屏幕边缘时自动换侧。'}" Foreground="{x:Static local:HudTheme.Muted}" Margin="0,2,0,12"/>
           <TextBlock Text="{local:Tr '相对宠物的位置'}"/>
           <ComboBox x:Name="Alignment" Margin="0,5,0,12" SelectionChanged="Control_OnChanged">
 
@@ -90,9 +87,9 @@
             <ComboBoxItem Tag="above" Content="{local:Tr '上方'}"/>
             <ComboBoxItem Tag="below" Content="{local:Tr '下方'}"/>
           </ComboBox>
-          <DockPanel><TextBlock Text="{local:Tr '水平偏移'}"/><TextBlock x:Name="HorizontalOffsetValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel><TextBlock Text="{local:Tr '水平偏移'}"/><TextBlock x:Name="HorizontalOffsetValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{x:Static local:HudTheme.Muted}"/></DockPanel>
           <Slider x:Name="HorizontalOffset" Minimum="-400" Maximum="400" TickFrequency="1" ValueChanged="Control_OnChanged"/>
-          <DockPanel Margin="0,10,0,0"><TextBlock Text="{local:Tr '垂直偏移'}"/><TextBlock x:Name="VerticalOffsetValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel Margin="0,10,0,0"><TextBlock Text="{local:Tr '垂直偏移'}"/><TextBlock x:Name="VerticalOffsetValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{x:Static local:HudTheme.Muted}"/></DockPanel>
           <Slider x:Name="VerticalOffset" Minimum="-300" Maximum="300" TickFrequency="1" ValueChanged="Control_OnChanged"/>
           <UniformGrid Columns="5" Margin="0,12,0,0">
             <Button Content="←" Tag="left" Click="NudgeButton_OnClick" Margin="2" ToolTip="{local:Tr '向左 5 像素'}"/>
@@ -103,12 +100,12 @@
           </UniformGrid>
         </StackPanel>
       </Border>
-      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="White" BorderBrush="#E4E4E7" BorderThickness="1">
+      <Border Padding="16" Margin="0,0,0,12" CornerRadius="12" Background="{x:Static local:HudTheme.Card}" BorderBrush="{x:Static local:HudTheme.Border}" BorderThickness="1">
         <StackPanel>
-          <TextBlock Text="{local:Tr '大小与间距'}" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="{local:Tr '默认 190 × 72，可继续缩放。'}" Foreground="#71717A" Margin="0,2,0,12"/>
-          <DockPanel><TextBlock Text="{local:Tr '状态条大小'}"/><TextBlock x:Name="ScaleValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
+          <TextBlock Text="{local:Tr '大小与间距'}" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="{local:Tr '默认 100 × 40，可继续缩放。'}" Foreground="{x:Static local:HudTheme.Muted}" Margin="0,2,0,12"/>
+          <DockPanel><TextBlock Text="{local:Tr '状态条大小'}"/><TextBlock x:Name="ScaleValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{x:Static local:HudTheme.Muted}"/></DockPanel>
           <Slider x:Name="Scale" Minimum="0.5" Maximum="1.8" TickFrequency="0.05" ValueChanged="Control_OnChanged"/>
-          <DockPanel Margin="0,10,0,0"><TextBlock Text="{local:Tr '与宠物的间距'}"/><TextBlock x:Name="PotionGapValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#71717A"/></DockPanel>
+          <DockPanel Margin="0,10,0,0"><TextBlock Text="{local:Tr '与宠物的间距'}"/><TextBlock x:Name="PotionGapValue" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="{x:Static local:HudTheme.Muted}"/></DockPanel>
           <Slider x:Name="PotionGap" Minimum="0" Maximum="160" TickFrequency="1" ValueChanged="Control_OnChanged"/>
         </StackPanel>
       </Border>

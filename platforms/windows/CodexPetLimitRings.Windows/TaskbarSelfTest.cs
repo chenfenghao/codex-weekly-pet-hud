@@ -28,6 +28,8 @@ internal static class TaskbarSelfTest
             {
                 UiText.SetLanguage(language);
                 host.View.Update(usage, UiText.T("重置雷达 · 暂无新信号"), "Sample signal data", false);
+                Check(host.View.ToolTip.ToString()!.Contains("80%") && host.View.ToolTip.ToString()!.Contains(UiText.T("重置雷达 · 暂无新信号")), "Ring tooltip retains quota and radar in both languages");
+                Check(System.Windows.Automation.AutomationProperties.GetName(host.View) == host.View.ToolTip.ToString(), "Compact HUD exposes all information to accessibility tools");
                 Check(host.Place(0), "Taskbar attachment");
                 await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
                 await Task.Delay(250);
@@ -54,10 +56,14 @@ internal static class TaskbarSelfTest
                     expected.Render(host.View);
                     var pixels = new byte[bitmap.Width * bitmap.Height * 4];
                     expected.CopyPixels(pixels, bitmap.Width * 4, 0);
+                    graphics.Clear(System.Drawing.Color.FromArgb(248, 245, 240));
+                    Check(!MatchesHud(bitmap, pixels), "Blank light taskbar cannot pass ring rendering check");
+                    graphics.Clear(System.Drawing.Color.FromArgb(24, 32, 27));
+                    Check(!MatchesHud(bitmap, pixels), "Blank dark taskbar cannot pass ring rendering check");
                     var painted = false;
                     // Native compositing may trail WPF layout on the first HWND.
-                    // A light taskbar also has bright pixels. Match BOTH the HUD's
-                    // dark background and its glyph positions against WPF's rendering.
+                    // Match BOTH the dark quota arc and the light surface. A blank
+                    // light or dark taskbar must never count as a painted ring.
                     for (var attempt = 0; attempt < 10 && !painted; attempt++)
                     {
                         await Task.Delay(200);
@@ -65,7 +71,7 @@ internal static class TaskbarSelfTest
                         painted = MatchesHud(bitmap, pixels);
                     }
                     bitmap.Save(Path.Combine(directory, "taskbar-live." + language + ".png"));
-                    Check(painted, "Native HUD background and text actually painted (see taskbar-live capture)");
+                    Check(painted, "Native quota ring and surface actually painted (see taskbar-live capture)");
                 }
                 Render(host.View, Path.Combine(directory, "taskbar." + language + ".png"));
                 host.Hide(); Check(!host.IsVisible, "Shell flyout hide");
@@ -105,11 +111,12 @@ internal static class TaskbarSelfTest
             if (expected[i + 3] < 250) continue; // Rounded transparent corners.
             var b = expected[i]; var g = expected[i + 1]; var r = expected[i + 2];
             var pixel = actual.GetPixel(x, y);
-            var matches = Math.Abs(pixel.R - r) <= 45 && Math.Abs(pixel.G - g) <= 45 && Math.Abs(pixel.B - b) <= 45;
-            if (r < 80 && g < 80 && b < 80) { dark++; if (matches) darkMatches++; }
-            if (r > 160 && g > 160 && b > 160) { light++; if (matches) lightMatches++; }
+            var matches = Math.Abs(pixel.R - r) <= 30 && Math.Abs(pixel.G - g) <= 30 && Math.Abs(pixel.B - b) <= 30;
+            if (r < 190 && g < 180 && b < 250) { dark++; if (matches) darkMatches++; }
+            if (r > 232 && g > 232 && b > 225) { light++; if (matches) lightMatches++; }
         }
-        return dark >= 100 && light >= 40 && darkMatches >= dark * 0.9 && lightMatches >= light * 0.7;
+        var area = actual.Width * actual.Height;
+        return dark >= Math.Max(6, area * 0.02) && light >= area * 0.2 && darkMatches >= dark * 0.75 && lightMatches >= light * 0.9;
     }
 
     private static void Render(FrameworkElement view, string path)

@@ -2,21 +2,25 @@
 
 [简体中文](README.md) · **English**
 
-This fork is a .NET 8 / WPF tray application with a weekly quota HUD above the real Codex Pet. See the [main README](../../README.en.md) for usage instructions.
+This fork is a .NET 8 / WPF tray application with a weekly quota ring beside the real Codex Pet or inside the taskbar. See the [main README](../../README.en.md) for usage instructions.
 
 v1.2.0 also supports an independent taskbar mode. `displayMode` is `pet` (backward-compatible default) or `taskbar`; `taskbarOffset` is a separate leftward DIP offset. `TaskbarHudHost` owns a layered child HWND inside the primary horizontal taskbar, matching its DPI context without injecting into Explorer or resizing the app-button area. `UsesPerPixelTransparency` and the Windows 10/11 `supportedOS` manifest declaration prevent the Windows 11 composition surface from covering the HUD. Unsupported layouts retain the tray entry. This fix was verified on Windows 11 26H2 build 26300.9711 at 100% scaling; Windows 10 was not retested. Other builds, scaling settings, Explorer restarts and auto-hide need additional validation on target desktops.
 
-Run `CodexWeeklyPetHud.exe --taskbar-self-test <output-directory>` on an interactive desktop to check real taskbar parenting, non-topmost style, native hit tests, notification-area bounds, hide/recreate, bilingual rendering and settings switching. The test uses sample data without reading account quota. Screen captures must match both the HUD's background and text against the WPF reference; a blank light taskbar no longer passes. Captures are saved on failure as well.
+Run `CodexWeeklyPetHud.exe --taskbar-self-test <output-directory>` on an interactive desktop to check real taskbar parenting, non-topmost style, native hit tests, notification-area bounds, hide/recreate, bilingual rendering and settings switching. The test uses sample data without reading account quota. Screen captures must match both the dark quota arc and light surface against the WPF reference; blank light and dark taskbars cannot pass. Captures are saved on failure as well.
+
+Both modes share `QuotaBadge` and `QuotaRing` without an animation timer. Outer ring / top number shows remaining; inner ring / bottom number shows headroom until close. Default sizes are 100 × 40 DIP beside Pet and approximately 90 × 36 DIP in the taskbar. Deficits show a negative number and an empty inner arc; stale data does not advertise a usable budget. The pacing self-test checks these semantics and 20–72 DIP / 100%–200% DPI, and writes `ring-preview.png`.
 
 ## Building and source installation
 
 Details use Overview, Plan & history and Manual import tabs, with Refresh quota outside the scroll area. Settings use General, Schedule and Appearance tabs; taskbar mode hides Pet appearance controls without discarding their values. Default sizes are 560 × 600 and 520 × 620. The language self-test visits every tab in both languages, saves `compact-details-*` and `compact-settings-*` captures, and checks footer visibility and settings persistence.
 
+`HudTheme.cs` centralizes frozen brushes for background #EFF1F5, text #4C4F69 and accent #8839EF shared by XAML, charts and the widget. Buttons and tooltips use styles in `App.xaml`. Pace, warning and error text retain distinct, readable inks without changing state classification.
+
 Requires the .NET 8 SDK, Windows x64 and PowerShell. Run these commands from the repository root:
 
 ```powershell
 dotnet build platforms/windows/CodexPetLimitRings.Windows/CodexPetLimitRings.Windows.csproj -c Release
-pwsh -File scripts/release/package-weekly.ps1 -Tag v1.3.0
+pwsh -File scripts/release/package-weekly.ps1 -Tag v1.6.3
 ```
 
 Use `-DotnetPath C:\path\to\dotnet.exe` to select a custom SDK. Packages are written to `dist` and include Chinese and English documentation.

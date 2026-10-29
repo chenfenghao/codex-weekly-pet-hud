@@ -10,11 +10,14 @@ public sealed record HudPlacement(
 
 public static class HudLayout
 {
+    public const double RingDiameter = 40;
+    public const double BadgeWidth = 100;
+
     public static HudPlacement CalculateCapsule(PetAnchor anchor, OverlaySettings settings)
     {
         var scale = Math.Clamp(settings.Scale, 0.65, 1.8);
-        var width = 190 * scale;
-        var height = 72 * scale;
+        var width = BadgeWidth * scale;
+        var height = RingDiameter * scale;
         var gap = Math.Clamp(settings.PotionGap, 0, 160) * scale;
         var left = anchor.X - width - gap;
         var right = anchor.Right + gap;

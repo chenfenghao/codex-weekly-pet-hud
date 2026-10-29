@@ -9,7 +9,6 @@ using CodexPetLimitRings.Windows.Services;
 using CodexPetLimitRings.Windows.Views;
 using ComboBox = System.Windows.Controls.ComboBox;
 using TabControl = System.Windows.Controls.TabControl;
-using FlowDirection = System.Windows.FlowDirection;
 
 namespace CodexPetLimitRings.Windows;
 
@@ -58,20 +57,17 @@ internal static class LanguageSelfTest
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             Check(settings.Title == "Weekly quota · Settings", "Settings title binding");
             Check(details.Title == "Weekly quota · Pace companion", "Details title binding");
-            Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "capsule.en.png"));
+            Render((FrameworkElement)capsule.Content, HudLayout.BadgeWidth, HudLayout.RingDiameter, Path.Combine(directory, "capsule.en.png"));
             Render((FrameworkElement)details.Content, 560, 600, Path.Combine(directory, "details.en.png"));
             Render((FrameworkElement)settings.Content, 520, 620, Path.Combine(directory, "settings.en.png"));
             foreach (var view in new FrameworkElement[] { (FrameworkElement)capsule.Content, (FrameworkElement)details.Content })
                 foreach (var text in TextBlocks(view))
                     Check(English(text.Text), "Untranslated visible label: " + text.Text);
-            var left = (TextBlock)capsule.FindName("RemainingText");
-            var pace = (TextBlock)capsule.FindName("PaceText");
-            var leftBounds = left.TransformToAncestor((Visual)capsule.Content).TransformBounds(new Rect(left.RenderSize));
-            var paceBounds = pace.TransformToAncestor((Visual)capsule.Content).TransformBounds(new Rect(pace.RenderSize));
-            var measured = new FormattedText(left.Text, UiText.Culture, FlowDirection.LeftToRight, new Typeface(left.FontFamily, left.FontStyle, left.FontWeight, left.FontStretch), left.FontSize, left.Foreground, 1);
-            Check(leftBounds.Left + measured.Width < paceBounds.Left - 3, "English capsule labels overlap");
+            var ringButton = (System.Windows.Controls.Button)capsule.FindName("Root");
+            Check(capsule.FindName("Ring") is QuotaBadge { RemainingText: "80%" } && English(ringButton.ToolTip.ToString()!), "Ring shows percentage directly and keeps translated tooltip");
+            Check(ringButton.ToolTip.ToString()!.Contains("80%") && ringButton.ToolTip.ToString()!.Contains("Even"), "Ring retains remaining quota and exact targets in tooltip");
             capsule.UpdateResetSignal(UiText.T("雷达 · 新重置信号"), "Example signal", true);
-            Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "radar-alert.en.png"));
+            Render((FrameworkElement)capsule.Content, HudLayout.BadgeWidth, HudLayout.RingDiameter, Path.Combine(directory, "radar-alert.en.png"));
             // Exercise the real settings control and its save event on an interactive desktop.
             var changes = 0;
             settings.SettingsChanged += value => { changes++; File.WriteAllText(Path.Combine(directory, "settings-roundtrip.json"), JsonSerializer.Serialize(value)); };
@@ -98,9 +94,9 @@ internal static class LanguageSelfTest
             capsule.PacingSettings = details.PacingSettings = workSettings;
             capsule.UpdateUsage(usage.SecondaryRemaining, usage.SecondaryReset, usage.Source);
             details.Update(usage, false);
-            Check(!string.IsNullOrWhiteSpace(((TextBlock)capsule.FindName("IdealText")).Text) && capsule.FindName("Gauge") is QuotaGauge, "Capsule shows daily budget and target gauge");
+            Check(ringButton.ToolTip.ToString()!.Contains("Until close") || ringButton.ToolTip.ToString()!.Contains("Below"), "Ring tooltip retains closing-target headroom");
             Check(((TextBlock)details.FindName("BudgetLabel")).Text == "Budget left today", "Details identifies today's budget");
-            Render((FrameworkElement)capsule.Content, 190, 72, Path.Combine(directory, "work-capsule.en.png"));
+            Render((FrameworkElement)capsule.Content, HudLayout.BadgeWidth, HudLayout.RingDiameter, Path.Combine(directory, "work-capsule.en.png"));
             settings.Height = 900;
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
             Render((FrameworkElement)settings.Content, 520, 900, Path.Combine(directory, "work-settings.en.png"));
